@@ -1,5 +1,8 @@
-using Rebus.Config;
+﻿using Rebus.Config;
 using Rebus.Routing.TypeBased;
+using Rebus.Sagas;
+using Rebus.Subscriptions;
+using Rebus.Transport;
 using SagaFlow;
 using SimpleMvcExample.CommandHandlers;
 using SimpleMvcExample.Messages;
@@ -13,7 +16,31 @@ builder.Services.AddScoped<IResourceListProvider<Tenant>>(s => new SampleTenantP
 builder.Services.AddScoped<SimpleTaskHandler>();
 builder.Services.AddControllersWithViews();
 
+var dbProvider = builder.Configuration.GetValue<string>("Database:Provider");
 var db = builder.Configuration.GetValue<string>("Database:ConnectionString");
+
+void ConfigureRebusTransport(StandardConfigurer<ITransport> t)
+{
+    if (dbProvider == "sqlserver")
+        t.UseSqlServer(db, "test.workflow");
+    else
+        t.UsePostgreSql(db, "messages", "test.workflow");
+}
+void ConfigureRebusSubscriptions(StandardConfigurer<ISubscriptionStorage> s)
+{
+    if (dbProvider == "sqlserver")
+        s.StoreInSqlServer(db, "Subscriptions", isCentralized: true);
+    else
+        s.StoreInPostgres(db, "subscriptions", isCentralized: true);
+}
+void ConfigureRebusSagaStorage(StandardConfigurer<ISagaStorage> s)
+{
+    if (dbProvider == "sqlserver")
+        s.StoreInSqlServer(db, "Sagas", "SagaIndex");
+    else
+        s.StoreInPostgres(db, "saga-data", "saga-index");
+}
+
 // TODO: Look at running the web app as only for producing Saga msgs,
 // and a separate worker app for actually running the saga workflows.
 //services.AddSagaFlow(o => o.WithTransport(t => t.UsePostgreSqlAsOneWayClient(db, "messages")));
@@ -23,9 +50,9 @@ builder.Services.AddSagaFlow(o => o
     .AddCommandsOfType<ICommand>()
     //.AddCommandFromEvent<StartSimpleTaskRequested>()
     .WithLogging(l => l.Console())
-    .WithTransport(t => t.UsePostgreSql(db, "messages", "test.workflow"))
-    .WithSubscriptionStorage(s => s.StoreInPostgres(db, "subscriptions", isCentralized: true))
-    .WithSagaStorage(s => s.StoreInPostgres(db, "saga-data", "saga-index"))
+    .WithTransport(ConfigureRebusTransport)
+    .WithSubscriptionStorage(ConfigureRebusSubscriptions)
+    .WithSagaStorage(ConfigureRebusSagaStorage)
     .WithRouting(r => r.TypeBased().MapAssemblyOf<ICommand>("ops-panel"))
     //.WithTimeoutStorage(t => t.StoreInPostgres(db, "timeouts"))
     );
