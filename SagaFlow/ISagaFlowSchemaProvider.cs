@@ -1,0 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
+using SagaFlow.Schema;
+
+namespace SagaFlow
+{
+    public interface ISagaFlowSchemaProvider
+    {
+        IReadOnlyList<Resource> Resources { get; }
+        IReadOnlyList<Command> Commands { get; }
+    }
+}
