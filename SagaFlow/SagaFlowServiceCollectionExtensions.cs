@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 ApiBasePath = apiBasePath,
                 Commands = commands,
-                Resources = resourceDefinitions,
+                ResourceProviders = resourceDefinitions,
             };
             services.TryAddSingleton(sagaFlowModule);
             services.TryAddSingleton<ISagaFlowSchemaProvider>(sagaFlowModule);
@@ -125,15 +125,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 ?.ImplementationInstance;
         }
 
-        private static IEnumerable<Resource> BuildResourcesFromProviderType(Type resourceProviderType)
+        private static IEnumerable<ResourceProvider> BuildResourcesFromProviderType(Type resourceProviderType)
         {
             foreach (var resourceProviderInterface in resourceProviderType.GetInterfacesOfOpenGenericInterface(typeof(IResourceListProvider<>)))
             {
                 var resourceType = resourceProviderInterface.GetGenericArguments()[0];
-                yield return new Resource
+                var resourceTypeAttributes = resourceType.GetCustomAttributes();
+                var displayNameAttribute = resourceTypeAttributes.OfType<DisplayNameAttribute>().FirstOrDefault();
+
+                // TODO: Should probably use something else - DisplayName on a singular resource type DTO doesn't
+                // quite fit, as the resource type represents a single, where as the below resource provider is more
+                // a plural version.
+                var resourceName = displayNameAttribute?.DisplayName ?? resourceType.Name + "s";
+                yield return new ResourceProvider
                 {
+                    Id = resourceName.ToKebabCase(),
                     Type = resourceType,
-                    DisplayName = resourceType.Name,
+                    Name = resourceName,
                     ProviderType = resourceProviderType,
                     IdType = null, // todo
                 };
@@ -152,16 +160,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 //.Where(p => p.Attributes.Any(a => a is IgnoreAttribute)
                 .ToList();
 
+            var commandTypeAttributes = commandType.GetCustomAttributes();
+            var displayNameAttribute = commandTypeAttributes.OfType<DisplayNameAttribute>().FirstOrDefault();
 
             return new Command
             {
+                Id = commandType.Name.ToKebabCase(),
                 CommandType = commandType,
-                Name = commandType.Name,
-                DisplayName = commandType.Name, // TODO: attribute for user friendly name
+                Name = displayNameAttribute?.DisplayName ?? commandType.Name,
                 EventType = null,
                 Parameters = parameterProps.Select(p => new CommandParameter
                 {
-                    Name = p.PropertyInfo.Name,
+                    Id = p.PropertyInfo.Name, // TODO: default to camelCase for property ids to match json / front end js conventions?
+                    Name = p.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault()?.DisplayName ?? p.PropertyInfo.Name,
                     Description = p.Attributes.OfType<DescriptionAttribute>().FirstOrDefault()?.Description,
                     InputType = p.PropertyInfo.PropertyType,
                 })

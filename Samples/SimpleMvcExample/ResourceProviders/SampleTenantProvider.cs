@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using SagaFlow;
@@ -23,6 +24,7 @@ namespace SimpleMvcExample.ResourceProviders
         }
     }
 
+    [DisplayName("Sample Tenants")]
     public class Tenant
     {
         public Guid Id { get; init; }

@@ -17,10 +17,10 @@ namespace SagaFlow
         }
 
         /// <summary>
-        /// Converts a PascalCaseString into a kebab-case-string
+        /// Converts a PascalCaseString or a 'normally spaced string' into a kebab-case-string
         /// </summary>
         /// <remarks>
-        /// src: https://stackoverflow.com/a/54012346/505457
+        /// Adapted from: https://stackoverflow.com/a/54012346/505457
         /// </remarks>
         public static string ToKebabCase(this string source)
         {
@@ -32,7 +32,12 @@ namespace SagaFlow
 
             for (var i = 0; i < source.Length; i++)
             {
-                if (char.IsLower(source[i])) // if current char is already lowercase
+                // TODO: some tests around these 'normally spaced string' conversions.
+                if (source[i] == ' ')
+                {
+                    builder.Append('-');
+                }
+                else if (char.IsLower(source[i])) // if current char is already lowercase
                 {
                     builder.Append(source[i]);
                 }
@@ -48,6 +53,11 @@ namespace SagaFlow
                 else if (char.IsDigit(source[i])) // if current char is a number and previous is
                 {
                     builder.Append(source[i]);
+                }
+                else if (source[i - 1] == ' ') // if current char is upper and previous char is a space
+                {
+                    // prev space char already replaced with a hyphen so just emit the character 
+                    builder.Append(char.ToLower(source[i]));
                 }
                 else if (char.IsLower(source[i - 1])) // if current char is upper and previous char is lower
                 {

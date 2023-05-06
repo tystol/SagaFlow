@@ -91,7 +91,7 @@ namespace SagaFlow
 
             Commands.Add(() => new[] { new Command
             {
-                DisplayName = commandName,
+                Name = commandName,
                 EventType = eventType,
                 CommandType = typeof(Newtonsoft.Json.Linq.JObject),
             } });

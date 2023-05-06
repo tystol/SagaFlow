@@ -6,7 +6,7 @@ namespace SagaFlow
 {
     public interface ISagaFlowSchemaProvider
     {
-        IReadOnlyList<Resource> Resources { get; }
+        IReadOnlyList<ResourceProvider> ResourceProviders { get; }
         IReadOnlyList<Command> Commands { get; }
     }
 }

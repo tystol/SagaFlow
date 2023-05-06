@@ -24,20 +24,19 @@ namespace SagaFlow.MvcProvider
         {
             var result = new SchemaResponse
             {
-                ResourceLists = schemaProvider.Resources
-                    .Select(r => new ResourceList
+                ResourceLists = schemaProvider.ResourceProviders
+                    .ToDictionary(r => r.Id, r => new ResourceListDefinition
                     {
-                        DisplayName = r.DisplayName,
+                        Name = r.Name,
                         Href = r.ListingRouteTemplate,
-                    })
-                    .ToList(),
+                    }),
                 Commands = schemaProvider.Commands
-                    .ToDictionary(c => c.Name.ToKebabCase(), c => new CommandDefinition
+                    .ToDictionary(c => c.Id, c => new CommandDefinition
                     {
-                        DisplayName = c.DisplayName,
+                        Name = c.Name,
                         Href = c.RouteTemplate, // TODO: proper route resolution
                         Parameters = c.Parameters
-                            .ToDictionary(p => p.Name.ToKebabCase(), p => new Parameter
+                            .ToDictionary(p => p.Name.ToKebabCase(), p => new ParameterDefinition
                             {
                                 Description = p.Description,
                                 Required = true,
@@ -51,24 +50,24 @@ namespace SagaFlow.MvcProvider
 
     public class SchemaResponse
     {
-        public List<ResourceList> ResourceLists { get; set; }
+        public IDictionary<string,ResourceListDefinition> ResourceLists { get; set; }
         public IDictionary<string,CommandDefinition> Commands { get; set; }
     }
 
-    public class ResourceList
+    public class ResourceListDefinition
     {
-        public string DisplayName { get; set; }
+        public string Name { get; set; }
         public string Href { get; set; }
     }
 
     public class CommandDefinition
     {
-        public string DisplayName { get; set; }
+        public string Name { get; set; }
         public string Href { get; set; }
-        public IDictionary<string,Parameter> Parameters { get; set; }
+        public IDictionary<string,ParameterDefinition> Parameters { get; set; }
     }
 
-    public class Parameter
+    public class ParameterDefinition
     {
         public string Description { get; set; }
         public bool Required { get; set; }

@@ -22,7 +22,7 @@ namespace SagaFlow.MvcProvider
                 var c = typeof(CommandController<>).MakeGenericType(command.CommandType).GetTypeInfo();
                 feature.Controllers.Add(c);
             }
-            foreach (var r in sagaFlowModule.Resources)
+            foreach (var r in sagaFlowModule.ResourceProviders)
             {
                 var c = typeof(ResourceController<>).MakeGenericType(r.Type).GetTypeInfo();
                 feature.Controllers.Add(c);

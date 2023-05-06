@@ -8,6 +8,6 @@ namespace SagaFlow
     {
         public string ApiBasePath { get; init; }
         public IReadOnlyList<Command> Commands { get; init; }
-        public IReadOnlyList<Resource> Resources { get; init; }
+        public IReadOnlyList<ResourceProvider> ResourceProviders { get; init; }
     }
 }

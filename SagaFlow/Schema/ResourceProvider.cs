@@ -2,9 +2,10 @@
 
 namespace SagaFlow.Schema
 {
-    public class Resource
+    public class ResourceProvider
     {
-        public string DisplayName { get; internal set; }
+        public string Id { get; internal set; }
+        public string Name { get; internal set; }
         public Type Type { get; internal set; }
         public Type IdType { get; internal set; }
         public Type ProviderType { get; internal set; }
