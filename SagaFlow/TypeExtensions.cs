@@ -6,6 +6,11 @@ namespace SagaFlow
 {
     internal static class TypeExtensions
     {
+        public static Type GetUnderlyingTypeIfNullable(this Type type)
+        {
+            return Nullable.GetUnderlyingType(type) ?? type;
+        }
+        
         public static bool IsImplementationOfOpenGenericInterface(this Type type, Type openGenericType)
         {
             if (!openGenericType.IsGenericTypeDefinition)
@@ -26,10 +31,9 @@ namespace SagaFlow
                 .Where(i => i.MatchesOpenGenericDefinition(openGenericType));
         }
 
-        public static bool MatchesOpenGenericDefinition(this Type type, Type openGenericType)
+        private static bool MatchesOpenGenericDefinition(this Type type, Type openGenericType)
         {
-            return type.IsGenericType &&
-                    openGenericType.IsAssignableFrom(type.GetGenericTypeDefinition());
+            return type.IsGenericType && openGenericType.IsAssignableFrom(type.GetGenericTypeDefinition());
         }
     }
 }

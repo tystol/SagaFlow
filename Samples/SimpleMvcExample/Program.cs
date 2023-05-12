@@ -1,4 +1,4 @@
-﻿using Rebus.Config;
+using Rebus.Config;
 using Rebus.Routing.TypeBased;
 using Rebus.Sagas;
 using Rebus.Subscriptions;
@@ -12,8 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddScoped<IResourceListProvider<Tenant>>(s => new SampleTenantProvider());
+// TODO: Find better way of handling the 2 generic overloads of resource providers. Should be able to register via 2 param type.
+//builder.Services.AddScoped<IResourceListProvider<SampleTenant, Guid>>(s => new SampleTenantProvider());
+//builder.Services.AddScoped<IResourceListProvider<DatabaseServer, DatabaseServerId>>(s => new SampleDatabaseServerProvider());
+builder.Services.AddScoped<IResourceListProvider<SampleTenant>>(s => new SampleTenantProvider());
+builder.Services.AddScoped<IResourceListProvider<DatabaseServer>>(s => new SampleDatabaseServerProvider());
 builder.Services.AddScoped<SimpleTaskHandler>();
+builder.Services.AddScoped<SendMessageToTenant>();
+builder.Services.AddScoped<BackupDatabaseServerHandler>();
 builder.Services.AddControllersWithViews();
 
 var dbProvider = builder.Configuration.GetValue<string>("Database:Provider");

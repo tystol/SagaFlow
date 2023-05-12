@@ -13,7 +13,7 @@ namespace SagaFlow
             if (String.IsNullOrEmpty(source) || Char.IsLower(source, 0))
                 return source;
 
-            return Char.ToLowerInvariant(source[0]) + source.Substring(1);
+            return Char.ToLowerInvariant(source[0]) + source[1..];
         }
 
         /// <summary>

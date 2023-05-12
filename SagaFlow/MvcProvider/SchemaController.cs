@@ -29,6 +29,11 @@ namespace SagaFlow.MvcProvider
                     {
                         Name = r.Name,
                         Href = r.ListingRouteTemplate,
+                        ResourceMetadata = new ResourceMetadata
+                        {
+                            IdKey = "id",
+                            TitleKey = "name",
+                        }
                     }),
                 Commands = schemaProvider.Commands
                     .ToDictionary(c => c.Id, c => new CommandDefinition
@@ -36,11 +41,13 @@ namespace SagaFlow.MvcProvider
                         Name = c.Name,
                         Href = c.RouteTemplate, // TODO: proper route resolution
                         Parameters = c.Parameters
-                            .ToDictionary(p => p.Name.ToKebabCase(), p => new ParameterDefinition
+                            .ToDictionary(p => p.Id, p => new ParameterDefinition
                             {
+                                Name = p.Name,
                                 Description = p.Description,
                                 Required = true,
-                                Type = p.InputType.Name,
+                                Type = p.InputType.Name, // TODO: mapping for .net types to front end conceptual types
+                                ResourceListId = p.ResourceProvider?.Id
                             })
                     }),
             };
@@ -58,6 +65,13 @@ namespace SagaFlow.MvcProvider
     {
         public string Name { get; set; }
         public string Href { get; set; }
+        public ResourceMetadata ResourceMetadata { get; set; }
+    }
+
+    public class ResourceMetadata
+    {
+        public string IdKey { get; set; }
+        public string TitleKey { get; set; }
     }
 
     public class CommandDefinition
@@ -69,8 +83,10 @@ namespace SagaFlow.MvcProvider
 
     public class ParameterDefinition
     {
+        public string Name { get; set; }
         public string Description { get; set; }
         public bool Required { get; set; }
         public string Type { get; set; } // TODO: proper type system to handle resource list inputs
+        public string ResourceListId { get; set; }
     }
 }

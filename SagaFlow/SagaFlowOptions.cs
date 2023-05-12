@@ -76,9 +76,18 @@ namespace SagaFlow
         public SagaFlowOptions AddResourceProvidersFromAssemblyOf<T>()
         {
             ResourceProviderTypes.Add(() => typeof(T).Assembly.GetTypes()
-                .Where(t => !t.IsAbstract && t.IsImplementationOfOpenGenericInterface(typeof(IResourceListProvider<>))));
+                .Where(IsResourceProviderType));
             return this;
+
+            bool IsResourceProviderType(Type type)
+            {
+                return !type.IsAbstract && (
+                    type.IsImplementationOfOpenGenericInterface(typeof(IResourceListProvider<>)) ||
+                    type.IsImplementationOfOpenGenericInterface(typeof(IResourceListProvider<,>))
+                );
+            }
         }
+        
 
         public SagaFlowOptions AddCommandFromEvent<T>()
         {

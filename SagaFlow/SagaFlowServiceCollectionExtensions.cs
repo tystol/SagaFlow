@@ -38,12 +38,40 @@ namespace Microsoft.Extensions.DependencyInjection
             // when added here, the bus will be NOT have been disposed when the StopAsync method gets called
             //services.AddHostedService<BackgroundServiceExample>();
 
+            
+            var resourceDefinitions = options.ResourceProviderTypes.SelectMany(f => f())
+                .SelectMany(BuildResourceProvidersFromType)
+                .ToList();
+            
+            // TODO: Better way of handling double up of IResourceListProvider<> vs IResourceListProvider<,> types.
+            resourceDefinitions = resourceDefinitions
+                .GroupBy(d => d.Id)
+                .Select(g => g.OrderByDescending(d => d.IdType != null).First())
+                .ToList();
+            
+            // If a resource type id is only used once (eg. strong typed Ids) then support automatically
+            // mapping commands containing these Ids to resource providers.
+            // TODO: If not unique, have an attribute based system to also provide this functionality.
+            var typeBasedIdMap = resourceDefinitions
+                .Where(rd => rd.IdType != null)
+                // don't automap for primitive types as too high a chance of inadvertently matching normal properties
+                .Where(rd => !(new []
+                    {
+                        typeof(int),
+                        typeof(string)
+                    }.Contains(rd.IdType)))
+                .GroupBy(rd => rd.IdType)
+                .Select(g => new
+                {
+                    IdType = g.Key,
+                    ResourceProviders = g.ToList(),
+                })
+                .Where(g => g.ResourceProviders.Count == 1)
+                .ToDictionary(g => g.IdType, g => g.ResourceProviders[0]);
+            
             //var commandTypes = options.CommandTypes.SelectMany(f => f()).ToList();
             var commands = options.Commands.SelectMany(f => f())
-                .Concat(options.CommandTypes.SelectMany(ct => ct().Select(BuildCommandFromType)))
-                .ToList();
-            var resourceDefinitions = options.ResourceProviderTypes.SelectMany(f => f())
-                .SelectMany(BuildResourcesFromProviderType)
+                .Concat(options.CommandTypes.SelectMany(ct => ct().Select(t => BuildCommandFromType(t, typeBasedIdMap))))
                 .ToList();
             var sagaFlowModule = new SagaFlowModule
             {
@@ -125,11 +153,25 @@ namespace Microsoft.Extensions.DependencyInjection
                 ?.ImplementationInstance;
         }
 
-        private static IEnumerable<ResourceProvider> BuildResourcesFromProviderType(Type resourceProviderType)
+        private static IEnumerable<ResourceProvider> BuildResourceProvidersFromType(Type type)
         {
-            foreach (var resourceProviderInterface in resourceProviderType.GetInterfacesOfOpenGenericInterface(typeof(IResourceListProvider<>)))
+            return new[]
+                {
+                    typeof(IResourceListProvider<>),
+                    typeof(IResourceListProvider<,>)
+                }
+                .SelectMany(i => BuildResourceProviders(type, i));
+        }
+
+        private static IEnumerable<ResourceProvider> BuildResourceProviders(Type resourceProviderType, Type resourceProviderInterfaceType)
+        {
+            foreach (var resourceProviderInterface in resourceProviderType.GetInterfacesOfOpenGenericInterface(resourceProviderInterfaceType))
             {
-                var resourceType = resourceProviderInterface.GetGenericArguments()[0];
+                var genericTypeParams = resourceProviderInterface.GetGenericArguments();
+                var resourceType = genericTypeParams[0];
+                // If using the multiple generic type param interface, then the 2nd type param is the type of Id used by the resource.
+                var idType = genericTypeParams.Length > 1 ? genericTypeParams[1].GetUnderlyingTypeIfNullable() : null;
+                
                 var resourceTypeAttributes = resourceType.GetCustomAttributes();
                 var displayNameAttribute = resourceTypeAttributes.OfType<DisplayNameAttribute>().FirstOrDefault();
 
@@ -143,12 +185,12 @@ namespace Microsoft.Extensions.DependencyInjection
                     Type = resourceType,
                     Name = resourceName,
                     ProviderType = resourceProviderType,
-                    IdType = null, // todo
+                    IdType = idType
                 };
             }
         }
 
-        private static Command BuildCommandFromType(Type commandType)
+        private static Command BuildCommandFromType(Type commandType, IDictionary<Type,ResourceProvider> resourceProviderMap)
         {
             var parameterProps = commandType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -171,10 +213,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 EventType = null,
                 Parameters = parameterProps.Select(p => new CommandParameter
                 {
-                    Id = p.PropertyInfo.Name, // TODO: default to camelCase for property ids to match json / front end js conventions?
+                    Id = p.PropertyInfo.Name.ToCamelCase(), // TODO: default to camelCase for property ids to match json / front end js conventions?
                     Name = p.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault()?.DisplayName ?? p.PropertyInfo.Name,
                     Description = p.Attributes.OfType<DescriptionAttribute>().FirstOrDefault()?.Description,
                     InputType = p.PropertyInfo.PropertyType,
+                    ResourceProvider = resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
+                    // TODO: Provide alternative to above to map resource providers to command properties. eg. attribute based.
+                    
                 })
                 .ToList(),
             };

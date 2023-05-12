@@ -1,31 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using SagaFlow;
 
 namespace SimpleMvcExample.ResourceProviders
 {
-    public class SampleTenantProvider : IResourceListProvider<Tenant>
+    public class SampleTenantProvider : IResourceListProvider<SampleTenant, Guid>
     {
-        private static List<Tenant> tenants = Enumerable.Range(0, 1000)
-                .Select(t => new Tenant
+        private static List<SampleTenant> tenants = Enumerable.Range(0, 1000)
+                .Select(t => new SampleTenant
                 {
                     Id = Guid.NewGuid(),
                     Name = "Tenant " + (t + 1),
                 })
                 .ToList();
 
-
-        public Task<IList<Tenant>> GetAll()
+        public Task<IList<SampleTenant>> GetAll()
         {
-            return Task.FromResult((IList<Tenant>)tenants);
+            return Task.FromResult((IList<SampleTenant>)tenants);
         }
     }
 
-    [DisplayName("Sample Tenants")]
-    public class Tenant
+    [DisplayName("Tenants")]
+    public class SampleTenant : IResource<Guid>
     {
         public Guid Id { get; init; }
         public string Name { get; init; }
