@@ -7,6 +7,7 @@ using SagaFlow;
 using SimpleMvcExample.CommandHandlers;
 using SimpleMvcExample.Messages;
 using SimpleMvcExample.ResourceProviders;
+using SimpleMvcExample.StrongTyping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,12 @@ builder.Services.AddScoped<IResourceListProvider<DatabaseServer>>(s => new Sampl
 builder.Services.AddScoped<SimpleTaskHandler>();
 builder.Services.AddScoped<SendMessageToTenant>();
 builder.Services.AddScoped<BackupDatabaseServerHandler>();
-builder.Services.AddControllersWithViews();
+builder.Services
+    .AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new StronglyTypedIdJsonConverterFactory());
+    });
 
 var dbProvider = builder.Configuration.GetValue<string>("Database:Provider");
 var db = builder.Configuration.GetValue<string>("Database:ConnectionString");

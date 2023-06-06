@@ -1,4 +1,6 @@
-﻿namespace SimpleMvcExample.Messages
+﻿using SimpleMvcExample.Messages.StrongTyping;
+
+namespace SimpleMvcExample.Messages
 {
-    public record DatabaseServerId(string Id);
+    public record DatabaseServerId(string Value) : StronglyTypedId<string>(Value);
 }
