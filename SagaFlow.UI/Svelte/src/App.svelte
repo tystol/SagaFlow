@@ -11,7 +11,7 @@
   setup.apiRoot = setup.apiRoot.replace(/\/$/, "");
   setup.webRoot = setup.webRoot.replace(/\/$/, "");
 
-  const fetchConfig: Promise<Config> = fetch(`${setup.apiRoot}/sagaflow`).then(result => result.ok ? result.json() : Promise.reject(result)) as Promise<Config>
+  const fetchConfig: Promise<Config> = fetch(`${setup.apiRoot}/sagaflow/schema`).then(result => result.ok ? result.json() : Promise.reject(result)) as Promise<Config>
   
   setContext<Setup>("setup", setup);
 

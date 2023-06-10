@@ -9,7 +9,7 @@ namespace SagaFlow.MvcProvider
     [ApiController]
     // Route attribute is required for ApiController's, but replaced at runtime
     // via MvcEndpointRouteConvention to resolve custom sagaflow parameters.
-    [Route("[sagaflow-base-path]")]
+    [Route("[sagaflow-base-path]/schema")]
     public class SchemaController : ControllerBase
     {
         private readonly ISagaFlowSchemaProvider schemaProvider;

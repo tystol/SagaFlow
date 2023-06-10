@@ -25,7 +25,7 @@
         const results = await fetch(`${setup.apiRoot}/${rld.href}`);
         if (results.ok) {
             const data = await results.json();
-            cache[resourceListId] = new writable<Array<Resource>>(data);
+            cache[resourceListId] = writable<Array<Resource>>(data);
             return data;
         }
     };
