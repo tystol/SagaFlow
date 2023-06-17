@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Builder
         /// Register the Workflow middleware
         /// </summary>
         public static IApplicationBuilder UseSagaFlow(
-            this IApplicationBuilder app,
-            string apiBasePath = "sagaflow")
+            this IApplicationBuilder app)
         {
+            var module = app.ApplicationServices.GetRequiredService<SagaFlowModule>();
             var provider = new ManifestEmbeddedFileProvider(assembly: Assembly.GetAssembly(typeof(SagaFlowModule)), "UI");
-            var path = new PathString("/" + apiBasePath);
-            var path2 = new PathString("/" + apiBasePath + "/");
+            var path = new PathString("/" + module.ApiBasePath);
+            var path2 = new PathString("/" + module.ApiBasePath + "/");
             
             app.ApplicationServices.UseRebus(bus =>
             {

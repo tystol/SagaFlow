@@ -75,7 +75,7 @@
 -->
 
 {#if commandDefinition}
-<form class="command" bind:this={form}>
+<form class="command" bind:this={form} on:submit|preventDefault={sendCommand}>
     <div class="name">Command: {commandDefinition.name}</div>
     <div>Parameters</div>
     <div class="parameters">
@@ -106,6 +106,6 @@
             </div>
         {/each}
     </div>
-    <button on:click={sendCommand}>Run</button>
+    <button type="submit">Run</button>
 </form>
 {/if}

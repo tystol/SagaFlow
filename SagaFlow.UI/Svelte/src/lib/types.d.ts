@@ -1,6 +1,5 @@
 export type Setup = {
     apiRoot: string;
-    apiPath: string
     webRoot: string;
 };
 

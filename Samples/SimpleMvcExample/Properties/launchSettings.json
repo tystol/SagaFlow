@@ -12,7 +12,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "https://localhost:7172/sagaflow",
-      "applicationUrl": "https://localhost:7172;http://localhost:5110",
+      "applicationUrl": "https://localhost:7172",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

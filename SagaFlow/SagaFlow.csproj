@@ -24,4 +24,9 @@
     <None Remove="UI\index.html" />
     <EmbeddedResource Include="UI\index.html" />
   </ItemGroup>
+
+  <Target Name="BuildSagaFlowUI" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
+    <Exec WorkingDirectory="..\SagaFlow.UI\Svelte\" Command="npm run build" />
+    <Copy SourceFiles="..\SagaFlow.UI\Svelte\dist\index.html" DestinationFolder="UI\"/>
+  </Target>
 </Project>
