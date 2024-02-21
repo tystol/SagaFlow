@@ -1,8 +1,10 @@
-﻿using Rebus.Config;
+using Rebus.Config;
+using Rebus.Persistence.InMem;
 using Rebus.Routing.TypeBased;
 using Rebus.Sagas;
 using Rebus.Subscriptions;
 using Rebus.Transport;
+using Rebus.Transport.InMem;
 using SagaFlow;
 using SimpleMvcExample.CommandHandlers;
 using SimpleMvcExample.Messages;
@@ -28,29 +30,40 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new StronglyTypedIdJsonConverterFactory());
     });
 
+const string inputQueueName = "sagaflow.sampleapp";
+
 var dbProvider = builder.Configuration.GetValue<string>("Database:Provider");
 var db = builder.Configuration.GetValue<string>("Database:ConnectionString");
 
 void ConfigureRebusTransport(StandardConfigurer<ITransport> t)
 {
     if (dbProvider == "sqlserver")
-        t.UseSqlServer(db, "test.workflow");
+        t.UseSqlServer( new SqlServerTransportOptions(db), inputQueueName);
+    else if (dbProvider == "postgres")
+        t.UsePostgreSql(db, "messages", inputQueueName);
     else
-        t.UsePostgreSql(db, "messages", "test.workflow");
+        t.UseInMemoryTransport(new InMemNetwork(),inputQueueName);
 }
 void ConfigureRebusSubscriptions(StandardConfigurer<ISubscriptionStorage> s)
 {
     if (dbProvider == "sqlserver")
         s.StoreInSqlServer(db, "Subscriptions", isCentralized: true);
-    else
+    else if (dbProvider == "postgres")
         s.StoreInPostgres(db, "subscriptions", isCentralized: true);
+    else
+    {
+        // Not needed as of Rebus v8, as the in-memory transport also registers itself as subscription storage.
+        // s.StoreInMemory();
+    }
 }
 void ConfigureRebusSagaStorage(StandardConfigurer<ISagaStorage> s)
 {
     if (dbProvider == "sqlserver")
         s.StoreInSqlServer(db, "Sagas", "SagaIndex");
-    else
+    else if (dbProvider == "postgres")
         s.StoreInPostgres(db, "saga-data", "saga-index");
+    else
+        s.StoreInMemory();
 }
 
 // TODO: Look at running the web app as only for producing Saga msgs,
@@ -65,7 +78,7 @@ builder.Services.AddSagaFlow(o => o
     .WithTransport(ConfigureRebusTransport)
     .WithSubscriptionStorage(ConfigureRebusSubscriptions)
     .WithSagaStorage(ConfigureRebusSagaStorage)
-    .WithRouting(r => r.TypeBased().MapAssemblyOf<ICommand>("ops-panel"))
+    .WithRouting(r => r.TypeBased().MapAssemblyOf<ICommand>(inputQueueName))
     //.WithTimeoutStorage(t => t.StoreInPostgres(db, "timeouts"))
     //, apiBasePath:"ocp"
     );

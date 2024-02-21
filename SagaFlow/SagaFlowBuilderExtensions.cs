@@ -1,15 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Rebus.Activation;
-using Rebus.Config;
-using Rebus.ServiceProvider;
 using SagaFlow;
 
 namespace Microsoft.AspNetCore.Builder
@@ -27,11 +19,6 @@ namespace Microsoft.AspNetCore.Builder
             var path = new PathString("/" + module.ApiBasePath);
             var path2 = new PathString("/" + module.ApiBasePath + "/");
             
-            app.ApplicationServices.UseRebus(bus =>
-            {
-                var sfm = app.ApplicationServices.GetService<SagaFlowModule>();
-                return Task.WhenAll(sfm.Commands.Select(c => bus.Subscribe(c.CommandType)));
-            });
             //return app.UseMiddleware<SagaFlowMiddleware>();
             return app.Use(async (context, next) =>
             {
@@ -43,7 +30,6 @@ namespace Microsoft.AspNetCore.Builder
                 // Call the next delegate/middleware in the pipeline.
                 await next(context);
             });
-
         }
     }
 }

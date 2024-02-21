@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
+using Rebus.Config;
 using Rebus.Routing.TypeBased;
-using Rebus.ServiceProvider;
 using SagaFlow;
 using SagaFlow.MvcProvider;
 using SagaFlow.Schema;
@@ -108,8 +108,12 @@ namespace Microsoft.Extensions.DependencyInjection
                     c = c.Timeouts(options.TimeoutConfigurer);
 
                 return c;
-            });
+            }, onCreated: bus =>
+            {
+                return Task.WhenAll(sagaFlowModule.Commands.Select(c => bus.Subscribe(c.CommandType)));
+            } );
 
+            services.AddHostedService(c => new CronRecurringCommandsBackgroundService(sagaFlowModule));
 
             services.Configure<MvcOptions>(o => o.Conventions.Add(new MvcEndpointRouteConvention(sagaFlowModule)));
             var manager = GetServiceFromCollection<ApplicationPartManager>(services);

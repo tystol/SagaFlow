@@ -35,7 +35,9 @@ namespace SagaFlow.MvcProvider
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] T value)
         {
-            await bus.Publish(value);
+            // Offer config over whether to send commands as a direct message? or always publish as event?
+            await bus.Send(value);
+//            await bus.Publish(value);
             return Ok();
         }
     }
