@@ -21,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IResourceListProvider<SampleTenant>>(s => new SampleTenantProvider());
 builder.Services.AddScoped<IResourceListProvider<DatabaseServer>>(s => new SampleDatabaseServerProvider());
 builder.Services.AddScoped<SimpleTaskHandler>();
+builder.Services.AddScoped<PeriodicJobHandler>();
 builder.Services.AddScoped<SendMessageToTenant>();
 builder.Services.AddScoped<BackupDatabaseServerHandler>();
 builder.Services

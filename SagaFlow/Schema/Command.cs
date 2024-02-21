@@ -12,6 +12,8 @@ namespace SagaFlow.Schema
         public Type EventType { get; internal set; }
         public string RouteTemplate { get; internal set; }
         public IReadOnlyList<CommandParameter> Parameters { get; internal set; }
+        public string CronExpression { get; internal set; }
+        public bool IsRecurringCommand => CronExpression != null;
     }
 
     public class CommandParameter

@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -12,12 +13,15 @@ using Rebus.Config;
 using Rebus.Routing.TypeBased;
 using SagaFlow;
 using SagaFlow.MvcProvider;
+using SagaFlow.Recurring;
 using SagaFlow.Schema;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SagaFlowServiceCollectionExtensions
     {
+        private static readonly Regex CronMarkerRegex = new Regex(@"(.*?)\s*\[cron:\s*(\S.+\S)\s*]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        
         public static IServiceCollection AddSagaFlow(
             this IServiceCollection services,
             Action<SagaFlowOptions> setupAction,
@@ -113,7 +117,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return Task.WhenAll(sagaFlowModule.Commands.Select(c => bus.Subscribe(c.CommandType)));
             } );
 
-            services.AddHostedService(c => new CronRecurringCommandsBackgroundService(sagaFlowModule));
+            services.AddHostedService<CronRecurringCommandsBackgroundService>();
 
             services.Configure<MvcOptions>(o => o.Conventions.Add(new MvcEndpointRouteConvention(sagaFlowModule)));
             var manager = GetServiceFromCollection<ApplicationPartManager>(services);
@@ -208,13 +212,17 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var commandTypeAttributes = commandType.GetCustomAttributes();
             var displayNameAttribute = commandTypeAttributes.OfType<DisplayNameAttribute>().FirstOrDefault();
-
+            var cronExpressionMatch = CronMarkerRegex.Match(displayNameAttribute?.DisplayName ?? String.Empty);
+            
             return new Command
             {
                 Id = commandType.Name.ToKebabCase(),
                 CommandType = commandType,
-                Name = displayNameAttribute?.DisplayName ?? commandType.Name,
+                Name = cronExpressionMatch.Success ? 
+                    cronExpressionMatch.Groups[1].Value :
+                    displayNameAttribute?.DisplayName ?? commandType.Name,
                 EventType = null,
+                CronExpression = cronExpressionMatch.Success ? cronExpressionMatch.Groups[2].Value : null,
                 Parameters = parameterProps.Select(p => new CommandParameter
                 {
                     Id = p.PropertyInfo.Name.ToCamelCase(), // TODO: default to camelCase for property ids to match json / front end js conventions?
@@ -223,7 +231,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     InputType = p.PropertyInfo.PropertyType,
                     ResourceProvider = resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
                     // TODO: Provide alternative to above to map resource providers to command properties. eg. attribute based.
-                    
                 })
                 .ToList(),
             };
