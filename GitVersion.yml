@@ -1,4 +1,4 @@
-assembly-versioning-scheme: Mainline
+mode: Mainline
 branches: {}
 ignore:
   sha: []
