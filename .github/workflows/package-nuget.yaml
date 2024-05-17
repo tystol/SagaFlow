@@ -35,13 +35,13 @@ jobs:
             --configuration Release `
             --output .\output\ `
             /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} `
-            /p:AssemplyFileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }}
+            /p:AssemplyFileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} `
+            /p:Version=${{ steps.gitversion.outputs.majorMinorPatch }}
             
       - name: Upload to nuget
         shell: pwsh
         run: |
-          dotnet nuget push `
-            .\output\*.nuget `
+          dotnet nuget push .\output\*.nupkg `
             --source https://api.nuget.org/v3/index.json `
             --api-key ${{ secrets.NUGET_API_KEY }} `
             --skip-duplicate

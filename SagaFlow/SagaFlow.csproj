@@ -45,7 +45,8 @@
     <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
-  <Target Name="BuildSagaFlowUI" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
+  <Target Name="BuildSagaFlowUI" BeforeTargets="DispatchToInnerBuilds" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
+    <Exec WorkingDirectory="..\SagaFlow.UI\Svelte\" Condition="!Exists('..\SagaFlow.UI\Svelte\node_modules')" Command="npm ci" />
     <Exec WorkingDirectory="..\SagaFlow.UI\Svelte\" Command="npm run build" />
     <Copy SourceFiles="..\SagaFlow.UI\Svelte\dist\index.html" DestinationFolder="UI\" />
   </Target>
