@@ -44,6 +44,10 @@
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\SagaFlow.Interfaces\SagaFlow.Interfaces.csproj" />
+  </ItemGroup>
 
   <Target Name="BuildSagaFlowUI" BeforeTargets="DispatchToInnerBuilds" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
     <Exec WorkingDirectory="..\SagaFlow.UI\Svelte\" Condition="!Exists('..\SagaFlow.UI\Svelte\node_modules')" Command="npm ci" />

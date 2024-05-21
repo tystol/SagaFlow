@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
 using SagaFlow;
+using SagaFlow.Interfaces;
 using SagaFlow.MvcProvider;
 using SagaFlow.Recurring;
 using SagaFlow.Schema;
@@ -210,19 +210,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 //.Where(p => p.Attributes.Any(a => a is IgnoreAttribute)
                 .ToList();
 
-            var commandTypeAttributes = commandType.GetCustomAttributes();
-            var displayNameAttribute = commandTypeAttributes.OfType<DisplayNameAttribute>().FirstOrDefault();
-            var cronExpressionMatch = CronMarkerRegex.Match(displayNameAttribute?.DisplayName ?? String.Empty);
-            
+            var commandName = GetCommandName(commandType);
+            var cronExpression = GetCronExpression(commandType);
+
             return new Command
             {
                 Id = commandType.Name.ToKebabCase(),
                 CommandType = commandType,
-                Name = cronExpressionMatch.Success ? 
-                    cronExpressionMatch.Groups[1].Value :
-                    displayNameAttribute?.DisplayName ?? commandType.Name,
+                Name = commandName,
                 EventType = null,
-                CronExpression = cronExpressionMatch.Success ? cronExpressionMatch.Groups[2].Value : null,
+                CronExpression = cronExpression,
                 Parameters = parameterProps.Select(p => new CommandParameter
                 {
                     Id = p.PropertyInfo.Name.ToCamelCase(), // TODO: default to camelCase for property ids to match json / front end js conventions?
@@ -234,6 +231,52 @@ namespace Microsoft.Extensions.DependencyInjection
                 })
                 .ToList(),
             };
+        }
+
+        private static string GetCommandName(Type commandType)
+        {
+            var commandAttribute = commandType.GetCustomAttribute<CommandAttribute>();
+
+            if (commandAttribute != null) return commandAttribute.Name;
+            
+            var displayNameAttribute = commandType.GetCustomAttribute<DisplayNameAttribute>();
+
+            if (displayNameAttribute != null)
+            {
+                // In case the display name contains a cron expression in the form
+                // Restore Database [cron: 0 0 * * Fri *]
+                // Then we will resolve 'Restore Database' as the command name.
+                var cronExpressionMatch = CronMarkerRegex.Match(displayNameAttribute.DisplayName);
+
+                return cronExpressionMatch.Success
+                    ? cronExpressionMatch.Groups[1].Value
+                    : displayNameAttribute.DisplayName;
+            }
+
+            return commandType.Name;
+        }
+        
+        private static string GetCronExpression(Type commandType)
+        {
+            var commandAttribute = commandType.GetCustomAttribute<CommandAttribute>();
+
+            if (commandAttribute != null && !string.IsNullOrEmpty(commandAttribute.Cron)) 
+                return commandAttribute.Cron;
+            
+            var displayNameAttribute = commandType.GetCustomAttribute<DisplayNameAttribute>();
+
+            if (displayNameAttribute != null)
+            {
+                // Attempts to resolve a cron expression from the Display Name attribute in the form
+                // Restore Database [cron: 0 0 * * Fri *]
+                var cronExpressionMatch = CronMarkerRegex.Match(displayNameAttribute.DisplayName);
+
+                return cronExpressionMatch.Success
+                    ? cronExpressionMatch.Groups[2].Value
+                    : null;
+            }
+
+            return null;
         }
     }
 }

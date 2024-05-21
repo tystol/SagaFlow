@@ -31,7 +31,6 @@ jobs:
         shell: pwsh
         run: |
           dotnet pack `
-            ./SagaFlow/SagaFlow.csproj `
             --configuration Release `
             --output .\output\ `
             /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} `

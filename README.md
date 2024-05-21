@@ -21,6 +21,22 @@ public record AddTenantCommand
 	public string? Name { get; init; }
 }
 ```
+
+#### Scheduled re-occuring commands
+For commands that are executed on a scheduled time. 
+
+Using the CommandAttribute, add [SagaFlow.Interfaces](https://www.nuget.org/packages/SagaFlow.Interfaces) package to the class library containing your messages. Decorate the message with the CommandAttribute with a cron expression for when the job should run.
+```C#
+[Command("Take a shower", Cron = "30 17 * * * *")] // Takes a shower 5:30 pm everyday 
+public record TakeAShower { }
+```
+
+If you don't want to use the [SagaFlow.Interfaces](https://www.nuget.org/packages/SagaFlow.Interfaces) package, then you can specify the cron expression as part of the DisplayNameAttribute. This allows you to keep your messages library decoupled from SagaFlow.
+```C#
+[DisplayName("Take a shower [cron: 30 17 * * * *]")] // Takes a shower 5:30 pm everyday 
+public record TakeAShower { }
+```
+
 ### Implement your logic
 Application logic is written inside of message handlers. These are facilitated directly via [Rebus - read up more here](https://github.com/rebus-org/Rebus/wiki/Getting-started).
 
