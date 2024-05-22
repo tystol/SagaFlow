@@ -22,6 +22,7 @@ builder.Services.AddScoped<IResourceListProvider<SampleTenant>>(s => new SampleT
 builder.Services.AddScoped<IResourceListProvider<DatabaseServer>>(s => new SampleDatabaseServerProvider());
 builder.Services.AddScoped<SimpleTaskHandler>();
 builder.Services.AddScoped<PeriodicJobHandler>();
+builder.Services.AddScoped<PeriodicAlternativeJobHandler>();
 builder.Services.AddScoped<SendMessageToTenant>();
 builder.Services.AddScoped<BackupDatabaseServerHandler>();
 builder.Services
