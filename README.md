@@ -91,3 +91,87 @@ builder.Services.AddSagaFlow(o => o
 ### Run your app
 Your app will serve the generated SagaFlow UI under **todo...**
 **Insert screenshot of above UI here**
+
+### Web Components
+
+Sagaflow can expose a set of web components which can be used in your application.
+
+To import the Sagaflow webcomponents to your front end, you will need to import the Sagaflow javascript module:
+
+```html
+<script src="/sagaflow/web-components.js" type="module"></script>
+```
+
+In-case you have setup Sagaflow to use a different route for its webapi calls then you will need to import the Sagaflow module as such:
+
+```html
+
+<script type="module">
+    import "/[custom-sagaflow-route]/web-components.js";
+    
+    window.SagaFlow.initialize("[custom-sagaflow-route]")
+</script>
+```
+
+or if you don't want to use the attached SagaFlow from the window object.
+
+```html
+
+<script type="module">
+    import sagaFlow from "/[custom-sagaflow-route]/web-components.js";
+
+    sagaFlow.initialize("[custom-sagaflow-route]")
+</script>
+
+#### sf-command-form - Command form
+
+A Sagaflow webcomponent to display a simple form that is used to submit a command message to SagaFlow to run.
+
+For example, if you have a message that looks like this:
+
+```csharp
+public class BackupDatabaseServer : ICommand
+{
+    [DisplayName("Database Server")]
+    public DatabaseServerId? DatabaseServerId { get; init; }
+    
+    [DisplayName("Destination Filename")]
+    public string? DestinationFilename { get; init; }
+}
+```
+
+With a set of Database Server resources that looks like this:
+
+```csharp
+public class SampleDatabaseServerProvider : IResourceListProvider<DatabaseServer, DatabaseServerId>
+{
+    private static List<DatabaseServer> databases = Enumerable.Range(0, 10)
+        .Select(t => new DatabaseServer
+        {
+            Id = new DatabaseServerId(String.Format("server-{0:00}",t+1)),
+            Name = "Server " + (t + 1),
+        })
+        .ToList();
+
+    public Task<IList<DatabaseServer>> GetAll()
+    {
+        return Task.FromResult((IList<DatabaseServer>)databases);
+    }
+}
+
+public class DatabaseServer : IResource<DatabaseServerId>
+{
+    public DatabaseServerId Id { get; init; }
+    public string Name { get; init; }
+}
+```
+
+Then to display the Sagaflow command form to allow the user select a Database Server and to enter a Destination Filename, in your html markup:
+
+```html
+
+<sf-command-form commandId="backup-database-server"></sf-command-form>
+
+```
+
+The form will display a Drop Down list for the user to select a database server resource, and a input box to enter a destination filename.

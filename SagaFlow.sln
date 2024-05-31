@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SagaFlow.Interfaces", "SagaFlow.Interfaces\SagaFlow.Interfaces.csproj", "{6FB09C04-1D2A-4807-BBED-5D5958C580DF}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "SagaFlow.UI", "SagaFlow.UI\SagaFlow.UI.esproj", "{856E3710-0012-4650-BDB8-47124B95D1F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{6FB09C04-1D2A-4807-BBED-5D5958C580DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FB09C04-1D2A-4807-BBED-5D5958C580DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FB09C04-1D2A-4807-BBED-5D5958C580DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{856E3710-0012-4650-BDB8-47124B95D1F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{856E3710-0012-4650-BDB8-47124B95D1F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{856E3710-0012-4650-BDB8-47124B95D1F4}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{856E3710-0012-4650-BDB8-47124B95D1F4}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
