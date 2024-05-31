@@ -7,6 +7,9 @@
     <PackageProjectUrl>https://github.com/tystol/SagaFlow</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tystol/SagaFlow</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    
+    <!-- allows rebuild when there are changes to SagaFlow.UI changes -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   
   <ItemGroup>
@@ -39,6 +42,8 @@
   <ItemGroup>
     <None Remove="UI\index.html" />
     <EmbeddedResource Include="UI\index.html" />
+    <None Remove="UI\web-components.js" />
+    <EmbeddedResource Include="UI\web-components.js" />
   </ItemGroup>
   
   <ItemGroup>
@@ -47,11 +52,11 @@
   
   <ItemGroup>
     <ProjectReference Include="..\SagaFlow.Interfaces\SagaFlow.Interfaces.csproj" />
+    <ProjectReference Include="..\SagaFlow.UI\SagaFlow.UI.esproj" />
   </ItemGroup>
 
-  <Target Name="BuildSagaFlowUI" BeforeTargets="DispatchToInnerBuilds" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
-    <Exec WorkingDirectory="..\SagaFlow.UI\Svelte\" Condition="!Exists('..\SagaFlow.UI\Svelte\node_modules')" Command="npm ci" />
-    <Exec WorkingDirectory="..\SagaFlow.UI\Svelte\" Command="npm run build" />
-    <Copy SourceFiles="..\SagaFlow.UI\Svelte\dist\index.html" DestinationFolder="UI\" />
+  <Target Name="BuildSagaFlowUI" AfterTargets="ResolveProjectReferences" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
+    <Copy SourceFiles="..\SagaFlow.UI\dist\index.html" DestinationFolder="UI\" />
+    <Copy SourceFiles="..\SagaFlow.UI\dist-web-components\web-components.js" DestinationFolder="UI\" />
   </Target>
 </Project>

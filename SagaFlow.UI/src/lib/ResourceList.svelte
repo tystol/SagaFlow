@@ -1,3 +1,4 @@
+<svelte:options customElement="sf-resource-list"/>
 <script lang="ts">
     import {getContext} from "svelte";
     import type {Config, Resource, ResourceList, Setup} from "./types";
