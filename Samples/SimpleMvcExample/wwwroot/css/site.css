@@ -1,5 +1,7 @@
 ﻿html {
   font-size: 14px;
+  display: grid;
+  grid-template-rows: 1fr;
 }
 
 @media (min-width: 768px) {
@@ -11,8 +13,14 @@
 html {
   position: relative;
   min-height: 100%;
+  
+  display: grid;
+  grid-row: 1 fr;
 }
 
 body {
   margin-bottom: 60px;
+
+  display: flex;
+  flex-direction: column;
 }

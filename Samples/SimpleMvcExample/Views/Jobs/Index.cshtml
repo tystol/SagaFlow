@@ -1,0 +1,20 @@
+﻿@{
+    ViewBag.Title = "Jobs";
+}
+
+<script>
+    document.addEventListener(
+        "sf-command-success", 
+        (e) => {
+            alert("Successfully ran " + e.detail.commandId);
+            
+            console.log(e)
+        });
+</script>
+
+<h2>Jobs</h2>
+
+<div class="flex-fill">
+    <sf-main ServerKey="jobs"></sf-main>
+</div>
+

@@ -1,17 +1,30 @@
 import type {Config, Resource, Setup} from "$lib/types";
 import {get, type Readable, writable, type Writable} from "svelte/store";
 
-interface ISagaFlowServerState {
+export interface ISagaFlowServerState {
     setup: Setup;
+    
+    hasErrorFetchingConfig: boolean,
+    fetchConfigError?: Error,
+    
     config: Config;
     resourceCache: Record<string, Resource[]>;
 }
 
+// Using a convenient placeholder text that can be used to replace the sagaFlow route defined
+// in the web application when initialized with a custom route, default route is sagaflow:
+// builder.Services.AddSagaFlow(
+//    options => {},
+//    apiBasePath: "my-custom-route" )  
+const sagaFlowDefaultRoute: string = "__default_saga_flow_route_placeholder__";
+
 const initialState: ISagaFlowServerState = {
     setup: {
-        apiRoot: "sagaflow",
-        webRoot: "sagaflow"
+        baseUrl: "", // Blank refers to the local SagaFlow instance on a Web Application
+        apiRoot: sagaFlowDefaultRoute,
+        webRoot: sagaFlowDefaultRoute
     },
+    hasErrorFetchingConfig: false,
     config: {
         commands: {},
         resourceLists: {}
@@ -21,6 +34,18 @@ const initialState: ISagaFlowServerState = {
 }
 
 export const defaultSagaFlowServer: string = "__default_saga_flow_server__";
+
+interface SagaFlowInitializationOptions {
+    baseUrl?: string,
+    apiRoot?: string,
+    webRoot?: string
+}
+
+const defaultSagaFlowInitializationOptions: SagaFlowInitializationOptions = {
+    baseUrl: "",
+    apiRoot: sagaFlowDefaultRoute,
+    webRoot: sagaFlowDefaultRoute
+}
 
 class SagaFlow
 {
@@ -45,24 +70,37 @@ class SagaFlow
     
     // The initialization call used to initialize the SagaFlow web-components with routes other than the default 
     // sagaflow routes.
-    public initialize(baseUrl: string = "sagaflow", apiRoot: string | undefined = undefined, serverKey: string = defaultSagaFlowServer)
+    public initialize(
+        options: SagaFlowInitializationOptions = {},
+        serverKey: string = defaultSagaFlowServer)
     {
-        console.debug("SagaFlow.initialize: started");
+        // Make sure a store existing for the Server Key
+        this.ensureServerStoreExists(serverKey);
         
-        baseUrl = baseUrl.replace(/\/$/, "");
+        options = {
+            // Apply default options
+            ... defaultSagaFlowInitializationOptions, 
+            
+            // override with any options values supplied
+            ... options 
+        };
+        
+        console.debug("SagaFlow.initialize: started");
 
-        apiRoot ??= baseUrl;
-        apiRoot = apiRoot.replace(/\/$/, "");
+        const baseUrl = options.baseUrl.replace(/\/$/, "");
+        const webRoot = options.webRoot.replace(/\/$/, "");
+        const apiRoot = options.apiRoot.replace(/\/$/, "");
         
         const setup: Setup = {
-            webRoot: baseUrl,
+            baseUrl,
+            webRoot,
             apiRoot,
         }
 
-        console.debug(`SagaFlow.initialize:     using setup webRoot: ${setup.webRoot}, apiRoot: ${setup.apiRoot}`);
-        fetch(`/${apiRoot}/schema`)
+        console.debug(`SagaFlow.initialize:     using apiUrl: ${setup.baseUrl} setup webRoot: ${setup.webRoot}, apiRoot: ${setup.apiRoot}`);
+        fetch(`${baseUrl}/${apiRoot}/schema`)
             .then(async response => await this.processInitializationResponse(setup, response, serverKey))
-            .catch(error => Promise.reject(error))
+            .catch(error => this.handleInitializationErrors(error, setup, serverKey))
             .finally(() => console.debug("SagaFlow.initialize: completed"));
     }
     
@@ -70,14 +108,14 @@ class SagaFlow
     public async getResources(resourceId: string, serverKey: string = defaultSagaFlowServer): Promise<Resource[]> {
         const store = this.getServerStore(serverKey)
         const { setup, config, resourceCache } = get(store);
-        
+
         const resource = config.resourceLists[resourceId];
         
         if (!resource) throw Error(`Resource ${resourceId} does not exist`);
-        
+
         if (resourceCache[resourceId]) return resourceCache[resourceId];
 
-        const response = await fetch(`/${resource.href}`);
+        const response = await fetch(`${setup.baseUrl}/${resource.href}`);
 
         if (!response.ok) throw Error(`Unable to fetch list of ${resourceId}`)
 
@@ -98,7 +136,7 @@ class SagaFlow
     
     // Sends a command to the SagaFlow webapi to execute a SagaFlow command or job.
     public async sendCommandAsync<TCommand>(commandId: string, command: TCommand, serverKey: string = defaultSagaFlowServer): Promise<void> {
-        const { config } = get(this.getServerStore(serverKey));
+        const { setup, config } = get(this.getServerStore(serverKey));
         const commandDefinition = config.commands[commandId];
         
         if (!commandDefinition)
@@ -106,10 +144,10 @@ class SagaFlow
         console.debug("SagaFlow.sendCommandAsync: started");
 
         console.debug("SagaFlow.sendCommandAsync:   sending command:", command);
-        console.debug(`SagaFlow.sendCommandAsync:   to /${commandDefinition.href}`);
+        console.debug(`SagaFlow.sendCommandAsync:   to ${setup.baseUrl}/${commandDefinition.href}`);
         
        try {
-           const response= await fetch(`/${commandDefinition.href}`, {
+           const response= await fetch(`${setup.baseUrl}/${commandDefinition.href}`, {
                method: "POST",
                headers: {
                    'Accept': 'application/json',
@@ -129,38 +167,56 @@ class SagaFlow
     private async processInitializationResponse(setup: Setup, response: Response, serverKey: string)
     {
         if (!response.ok)
-            Promise.reject(response);
+            throw await response.json();
         
         const config: Config = await response.json();
         console.debug(`SagaFlow.initialize:     resolved configuration: `, config);
         
-        let store = this._servers[serverKey];
-        
-        if (!store)
-            store = this._servers[serverKey] = writable(initialState);
+        const store = this.getServerStore(serverKey);
 
         store.update(s => ({
             ... s,
             setup,
+            hasErrorFetchingConfig: false,
+            fetchConfigError: undefined,
             config
         }))
     }
+
+    private handleInitializationErrors(error: Error, setup: Setup, serverKey: string) {
+        
+        const store = this.getServerStore(serverKey);
+        
+        store.update(s => ({
+            ... s,
+            setup,
+            hasErrorFetchingConfig: true,
+            fetchConfigError: error
+        }))
+    }
     
-    private getServerStore(serverKey: string): Writable<ISagaFlowServerState>
+    private getServerStore(serverKey: string): Writable<ISagaFlowServerState> | undefined
     {
-        const store = this._servers[serverKey]
+        return this._servers[serverKey];
+    }
 
-        if (!store) throw Error(`Unknown server key: ${serverKey}`);
+    private ensureServerStoreExists(serverKey: string): Writable<ISagaFlowServerState>
+    {
+        let store = this._servers[serverKey];
 
+        if (!store)
+            store = this._servers[serverKey] = writable(initialState);
+        
         return store;
     }
+    
 }
 
 const sagaFlow: SagaFlow = new SagaFlow();
 sagaFlow.initialize();
 
 declare global {
-    interface Window { SagaFlow: SagaFlow; }
+    interface Window { SagaFlow: SagaFlow }
 }
 
 window.SagaFlow ??= sagaFlow;

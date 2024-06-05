@@ -1,4 +1,6 @@
 export type Setup = {
+    // The base url for the SagaFlow instance, when using the UI against the local SagaFlow instance then this value is blank, when using the UI against a SagaFlow instance  
+    baseUrl: string;
     apiRoot: string;
     webRoot: string;
 };
