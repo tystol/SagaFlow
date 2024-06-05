@@ -96,13 +96,13 @@ Your app will serve the generated SagaFlow UI under **todo...**
 
 Sagaflow can expose a set of web components which can be used in your application.
 
-To import the Sagaflow webcomponents to your front end, you will need to import the Sagaflow javascript module:
+To import the Sagaflow webcomponents to your front end, you will need to import the SagaFlow javascript module:
 
 ```html
 <script src="/sagaflow/web-components.js" type="module"></script>
 ```
 
-In-case you have setup Sagaflow to use a different route for its webapi calls then you will need to import the Sagaflow module as such:
+In-case you have setup SagaFlow to use a different route for its webapi calls then you will need to import the SagaFlow module as such:
 
 ```html
 
@@ -125,7 +125,7 @@ or if you don't want to use the attached SagaFlow from the window object.
 
 #### sf-command-form - Command form
 
-A Sagaflow webcomponent to display a simple form that is used to submit a command message to SagaFlow to run.
+A Sagaflow web-component to display a simple form that is used to submit a command message to SagaFlow to run.
 
 For example, if you have a message that looks like this:
 
@@ -175,3 +175,18 @@ Then to display the Sagaflow command form to allow the user select a Database Se
 ```
 
 The form will display a Drop Down list for the user to select a database server resource, and a input box to enter a destination filename.
+
+You can listen for the following SagaFlow DOM events for when a SagaFlow command has been successful sent to the server to be processed:
+- sf-command-success - The SagaFlow command was successful submitted to the server to be processed;
+- sf-command-error - An error was encountered submitting the command to the server to be processed;
+- sf-command-complete - The process of submitting the command to the server has completed, regardless if it was successful or not.
+
+The following will present a SagaFlow command form, when the user has completed the form and click on the run button it will submit the command to the SagaFlow server to run.  The front end will listen for the SagaFlow DOM events to present a message to the user indicating success.
+```html 
+<script>
+    document.addEventListener('sf-command-success', (e) => alert("Successful"));
+</script>
+
+<sf-command-form commandId="backup-database-server"></sf-command-form>
+
+```

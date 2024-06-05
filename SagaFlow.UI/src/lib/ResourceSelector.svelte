@@ -18,7 +18,7 @@
     {#await resources}
         <span>loading ...</span>
     {:then resources}
-        <select name={parameterId} required={parameter.required} {disabled}>
+        <select id={parameterId} name={parameterId} required={parameter.required} {disabled}>
             <option selected></option>
            
             {#each resources as resource}

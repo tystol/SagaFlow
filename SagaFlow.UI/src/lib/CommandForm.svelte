@@ -2,11 +2,27 @@
 <script lang="ts">
     import type {Command, Config} from "$lib/types";
     import sagaFlow, {defaultSagaFlowServer} from "../state/SagaFlowState";
-    import {onDestroy} from "svelte";
     import ResourceSelector from "$lib/ResourceSelector.svelte";
+    import {createEventDispatcher} from "svelte";
 
-    export let serverkey: string = defaultSagaFlowServer;
-    export let commandid: string;
+    export let serverKey: string = defaultSagaFlowServer;
+    export let commandId: string;
+    
+    const dispatcher = createEventDispatcher();
+    
+    const wrappedDispatcher = <TDetail>(event: string, detail: TDetail) => {
+        // Dispatch event for external event listeners
+        document.dispatchEvent(new CustomEvent(
+            event, 
+            {
+                detail,
+                bubbles: true,
+                composed: true,
+            }))
+        
+        // Dispatch internal svelte events
+        dispatcher(event, detail)
+    }
 
     let commandDefinition: Command;
     let form: HTMLFormElement;
@@ -27,11 +43,18 @@
         const command = Object.fromEntries(new FormData(form).entries());
         
         try {
-            await sagaFlow.sendCommandAsync(commandid, command, serverkey);
+            await sagaFlow.sendCommandAsync(commandId, command, serverKey);
+
+            wrappedDispatcher("sf-command-success", { serverKey, commandId, command });
         }
         catch (error)
         {
             showError(error);
+
+            wrappedDispatcher("sf-command-error", { serverKey, commandId, command, error });
+        }
+        finally {
+            wrappedDispatcher("sf-command-complete", { serverKey, commandId, command });
         }
     }
 
@@ -43,10 +66,18 @@
         lastErrorMessage = `${error}`;
     }
     
-    let store = sagaFlow.state(serverkey);
+    const resetFormOnCommandSelected = () => {
+        sendingCommand = false;
+        form?.reset();
+    }
     
+    let store = sagaFlow.state(serverKey);
+    
+    $: store = sagaFlow.state(serverKey);
     $: config = $store.config;
-    $: commandDefinition = config.commands[commandid];
+    $: commandDefinition = config.commands[commandId];
+    
+    $: commandId, resetFormOnCommandSelected();
     
 </script>
 
@@ -62,17 +93,17 @@
             {@const resourceList = parameter.resourceListId ? config.resourceLists[parameter.resourceListId] : null}
             <div class="parameter"
                 class:required={parameter.required}>
-                <span class="name">{parameterId}</span>
-                <span class="value">
+                <label class="name" for={parameterId}>{parameter.name ?? parameterId}</label>
+                <div class="value">
                 {#if parameter.type === "String"}
-                    <input type="text" name={parameterId} required={parameter.required} disabled={sendingCommand} />
+                    <input type="text" id={parameterId} name={parameterId} required={parameter.required} disabled={sendingCommand} />
                 {:else if parameter.type === "Boolean"}
-                    <label><input type="radio" name={parameterId} value={true} disabled={sendingCommand}>Yes</label>
-                    <label><input type="radio" name={parameterId} value={false} disabled={sendingCommand}>No</label>
+                    <label><input type="radio" id={`${parameterId}_yes`} name={parameterId} value={true} disabled={sendingCommand}>Yes</label>
+                    <label><input type="radio" id={`${parameterId}_no`} name={parameterId} value={false} disabled={sendingCommand}>No</label>
                 {:else if resourceList}
-                    <ResourceSelector serverKey={serverkey} resourceId={parameter.resourceListId} {parameterId} {parameter} disabled={sendingCommand} />
+                    <ResourceSelector serverKey={serverKey} resourceId={parameter.resourceListId} {parameterId} {parameter} disabled={sendingCommand} />
                 {/if}
-                </span>
+                </div>
                 {#if parameter.description}
                     <div class="description">{parameter.description}</div>
                 {/if}

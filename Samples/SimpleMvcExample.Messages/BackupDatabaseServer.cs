@@ -2,6 +2,7 @@
 
 namespace SimpleMvcExample.Messages
 {
+    [DisplayName("Backup Database Server")]
     public class BackupDatabaseServer : ICommand
     {
         [DisplayName("Database Server")]
