@@ -2,10 +2,10 @@
     <PropertyGroup>
         <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
         <StartupCommand>npm run dev</StartupCommand>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="dist-web-components\" />
         <Folder Include="src\" />
     </ItemGroup>
     

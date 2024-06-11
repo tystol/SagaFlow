@@ -1,28 +1,25 @@
-<svelte:options customElement="sf-command-form" />
+<svelte:options customElement={{
+    tag: "sf-command-form",
+    shadow: "none",
+    extend: extendToGetWebComponentRoot
+}} />
 <script lang="ts">
     import type {Command, Config} from "$lib/types";
     import sagaFlow, {defaultSagaFlowServer} from "../state/SagaFlowState";
     import ResourceSelector from "$lib/ResourceSelector.svelte";
-    import {createEventDispatcher} from "svelte";
+    import {
+        createWebComponentEventDispatcher,
+        extendToGetWebComponentRoot
+    } from "$lib/RootWebComponentEventDispatcher";
+    
 
+    // When used as a web-component, this is required to dispatch events from the web component
+    export let __webComponentElement: HTMLElement | undefined = undefined;
+    
     export let serverKey: string = defaultSagaFlowServer;
     export let commandId: string;
     
-    const dispatcher = createEventDispatcher();
-    
-    const wrappedDispatcher = <TDetail>(event: string, detail: TDetail) => {
-        // Dispatch event for external event listeners
-        document.dispatchEvent(new CustomEvent(
-            event, 
-            {
-                detail,
-                bubbles: true,
-                composed: true,
-            }))
-        
-        // Dispatch internal svelte events
-        dispatcher(event, detail)
-    }
+    const dispatcher = createWebComponentEventDispatcher(__webComponentElement)
 
     let commandDefinition: Command;
     let form: HTMLFormElement;
@@ -45,16 +42,16 @@
         try {
             await sagaFlow.sendCommandAsync(commandId, command, serverKey);
 
-            wrappedDispatcher("sf-command-success", { serverKey, commandId, command });
+            dispatcher("sf-command-success", { serverKey, commandId, command });
         }
         catch (error)
         {
             showError(error);
 
-            wrappedDispatcher("sf-command-error", { serverKey, commandId, command, error });
+            dispatcher("sf-command-error", { serverKey, commandId, command, error });
         }
         finally {
-            wrappedDispatcher("sf-command-complete", { serverKey, commandId, command });
+            dispatcher("sf-command-complete", { serverKey, commandId, command });
         }
     }
 

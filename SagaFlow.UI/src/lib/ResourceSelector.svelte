@@ -1,4 +1,3 @@
-<svelte:options customElement="sf-resource-selector"/>
 <script lang="ts">
     import sagaFlow from "../state/SagaFlowState";
     import type {Parameter, Resource} from "$lib/types";
