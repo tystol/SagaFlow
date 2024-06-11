@@ -2,19 +2,60 @@
     ViewData["Title"] = "Home Page";
 }
 
-<script>
-    document.addEventListener('sf-command-success', (e) => alert("Successful"));
-</script>
-
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    
-    
+    <p>
+        Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.
+    </p>
 </div>
 
 <div>
     <sf-not-found></sf-not-found>
         
-    <sf-command-form commandId="backup-database-server"></sf-command-form>
+    <sf-command-selector id="myCommandSelector"></sf-command-selector>
+    <sf-command-form id="myCommandForm" commandId="backup-database-server"></sf-command-form>
 </div>
+
+<div id="command-successful-toast" class="toast bg-primary text-white fade" style="position: absolute; top: 1rem; right: 1rem;" data-delay="10000">
+    <div class="toast-header bg-primary text-white">
+        <strong class="me-auto">Success!!!!</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body">
+        
+    </div>
+</div>
+
+<script>
+
+    function showSuccess(commandId, command) {
+        $("#command-successful-toast .toast-header > strong").html(`The command ${commandId} was sent to the server successfully.`);
+        
+        $("#command-successful-toast .toast-body").html(`With the message:  ${JSON.stringify(command)}`);
+        
+        $("#command-successful-toast").toast("show");
+    }
+    
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+            // An example of subscribing to an event from one Web Component, the Command Selector, then applying the
+            // selected command to a second web component, Command-Form.
+            
+            // When a command has been selected, apply the selection to the command form
+            myCommandSelector.addEventListener(
+                'sf-command-selected', 
+                (e) => {
+                    console.log("Command Selected: ", e.detail);
+                    
+                    myCommandForm.commandId = e.detail.commandId;
+                });
+             
+            // When a command has been successfully sent to the server display a successful message
+            myCommandForm.addEventListener(
+                'sf-command-success', 
+                (e) => showSuccess(e.detail.commandId, e.detail.command));   
+        }
+    )
+    
+</script>

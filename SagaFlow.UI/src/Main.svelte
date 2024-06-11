@@ -1,4 +1,8 @@
-<svelte:options customElement="sf-main"/>
+<svelte:options customElement={{
+    tag: "sf-main",
+    shadow: "none",
+    extend: extendToGetWebComponentRoot
+}}/>
 <script lang="ts">
   import Router from 'svelte-spa-router'
   import routes from './routes';
@@ -6,6 +10,12 @@
   import {type Readable, writable, type Writable} from "svelte/store";
   import sagaFlow, {defaultSagaFlowServer, type ISagaFlowServerState} from "./state/SagaFlowState";
   import type {Config, Setup} from "$lib/types";
+  import {
+      createWebComponentEventDispatcher,
+      extendToGetWebComponentRoot
+  } from "$lib/RootWebComponentEventDispatcher";
+  
+  export let __webComponentElement: HTMLElement | undefined = undefined;
   
   export let serverKey: string = defaultSagaFlowServer;
   
@@ -14,6 +24,8 @@
   
   const title = setContext<Writable<string>>("title", writable<string>());
   setContext<string>("serverKey", serverKey);
+  
+  createWebComponentEventDispatcher(__webComponentElement);
   
   let store: Readable<ISagaFlowServerState>;
   
