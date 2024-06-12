@@ -52,7 +52,9 @@
   
   <ItemGroup>
     <ProjectReference Include="..\SagaFlow.Interfaces\SagaFlow.Interfaces.csproj" />
-    <ProjectReference Include="..\SagaFlow.UI\SagaFlow.UI.esproj" />
+    <ProjectReference Include="..\SagaFlow.UI\SagaFlow.UI.esproj">
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <Target Name="BuildSagaFlowUI" AfterTargets="ResolveProjectReferences" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
