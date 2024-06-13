@@ -11,7 +11,7 @@
     "SimpleMvcExample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:7172/sagaflow",
+      "launchUrl": "https://localhost:7172/",
       "applicationUrl": "https://localhost:7172",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

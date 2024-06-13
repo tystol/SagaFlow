@@ -8,19 +8,19 @@
         <CleanCommand>npm run clean</CleanCommand>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <Optimize>true</Optimize>
+        <Optimize>true</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
         <Folder Include="src\" />
     </ItemGroup>
-    
-<!--    <Target Name="BuildWebComponents" BeforeTargets="Build">-->
-<!--        <Exec Command="npm run build:web-components" />-->
-<!--    </Target>-->
-    
+
+    <!--    <Target Name="BuildWebComponents" BeforeTargets="Build">-->
+    <!--        <Exec Command="npm run build:web-components" />-->
+    <!--    </Target>-->
+
     <!-- Just a stub for a pack target so dotnet pack doesn't complain -->
     <Target Name="pack">
-        
+
     </Target>
 </Project>

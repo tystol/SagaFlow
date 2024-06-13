@@ -1,28 +1,37 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 25.0.1706.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SagaFlow", "SagaFlow\SagaFlow.csproj", "{D0E7C26A-4361-40EF-A8E4-9A496E5AC416}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SagaFlow", "SagaFlow\SagaFlow.csproj", "{D0E7C26A-4361-40EF-A8E4-9A496E5AC416}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{91F6F62E-B150-402C-B9EA-F24CD51753A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleMvcExample", "Samples\SimpleMvcExample\SimpleMvcExample.csproj", "{F1B484D4-B622-4F34-A782-BED9458A02B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleMvcExample", "Samples\SimpleMvcExample\SimpleMvcExample.csproj", "{F1B484D4-B622-4F34-A782-BED9458A02B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleMvcExample.Messages", "Samples\SimpleMvcExample.Messages\SimpleMvcExample.Messages.csproj", "{BD526057-D6AA-4490-9D33-E49BC13A9C1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleMvcExample.Messages", "Samples\SimpleMvcExample.Messages\SimpleMvcExample.Messages.csproj", "{BD526057-D6AA-4490-9D33-E49BC13A9C1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0554112F-3950-4B2D-B0A5-3F3BB9765ABB}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SagaFlow.Interfaces", "SagaFlow.Interfaces\SagaFlow.Interfaces.csproj", "{6FB09C04-1D2A-4807-BBED-5D5958C580DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SagaFlow.Interfaces", "SagaFlow.Interfaces\SagaFlow.Interfaces.csproj", "{6FB09C04-1D2A-4807-BBED-5D5958C580DF}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "SagaFlow.UI", "SagaFlow.UI\SagaFlow.UI.esproj", "{856E3710-0012-4650-BDB8-47124B95D1F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SagaFlow.AspNetCore", "SagaFlow.AspNetCore\SagaFlow.AspNetCore.csproj", "{0D9F9A01-5FDB-4FD8-96C2-534AD71E6BBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SagaFlow.AspNetCore", "SagaFlow.AspNetCore\SagaFlow.AspNetCore.csproj", "{0D9F9A01-5FDB-4FD8-96C2-534AD71E6BBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SagaFlow.SignalR", "SagaFlow.SignalR\SagaFlow.SignalR.csproj", "{D69D2C10-D885-4E0B-9E3B-24C1EA97B455}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SagaFlow.SignalR", "SagaFlow.SignalR\SagaFlow.SignalR.csproj", "{D69D2C10-D885-4E0B-9E3B-24C1EA97B455}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E5D65724-860A-4092-A8C3-ED19D423A995}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sagaflow.Tests", "Sagaflow.Tests\Sagaflow.Tests.csproj", "{212955C6-006F-48B7-AAA1-843AFA190FEF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FluentTestScaffold.Bdd", "..\platform-fluent-test-scaffold\FluentTestScaffold.Bdd\FluentTestScaffold.Bdd.csproj", "{0F456E14-A3FC-4257-88DA-A3D49E6E61BD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FluentTestScaffold.AspNetCore", "..\platform-fluent-test-scaffold\FluentTestScaffold.AspNetCore\FluentTestScaffold.AspNetCore.csproj", "{9668D1F3-FE57-4C63-A9DA-822CF3F42494}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FluentTestScaffold.EntityFrameworkCore", "..\platform-fluent-test-scaffold\FluentTestScaffold.EntityFrameworkCore\FluentTestScaffold.EntityFrameworkCore.csproj", "{3DEE89AD-786A-474F-AD45-3B5D888EC7B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,15 +67,35 @@ Global
 		{D69D2C10-D885-4E0B-9E3B-24C1EA97B455}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D69D2C10-D885-4E0B-9E3B-24C1EA97B455}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D69D2C10-D885-4E0B-9E3B-24C1EA97B455}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212955C6-006F-48B7-AAA1-843AFA190FEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212955C6-006F-48B7-AAA1-843AFA190FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212955C6-006F-48B7-AAA1-843AFA190FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212955C6-006F-48B7-AAA1-843AFA190FEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F456E14-A3FC-4257-88DA-A3D49E6E61BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F456E14-A3FC-4257-88DA-A3D49E6E61BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F456E14-A3FC-4257-88DA-A3D49E6E61BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F456E14-A3FC-4257-88DA-A3D49E6E61BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9668D1F3-FE57-4C63-A9DA-822CF3F42494}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9668D1F3-FE57-4C63-A9DA-822CF3F42494}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9668D1F3-FE57-4C63-A9DA-822CF3F42494}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9668D1F3-FE57-4C63-A9DA-822CF3F42494}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DEE89AD-786A-474F-AD45-3B5D888EC7B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DEE89AD-786A-474F-AD45-3B5D888EC7B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DEE89AD-786A-474F-AD45-3B5D888EC7B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DEE89AD-786A-474F-AD45-3B5D888EC7B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA785396-047C-4781-BC4A-F8A3A1AF7394}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F1B484D4-B622-4F34-A782-BED9458A02B1} = {91F6F62E-B150-402C-B9EA-F24CD51753A4}
 		{BD526057-D6AA-4490-9D33-E49BC13A9C1A} = {91F6F62E-B150-402C-B9EA-F24CD51753A4}
+		{212955C6-006F-48B7-AAA1-843AFA190FEF} = {E5D65724-860A-4092-A8C3-ED19D423A995}
+		{0F456E14-A3FC-4257-88DA-A3D49E6E61BD} = {E5D65724-860A-4092-A8C3-ED19D423A995}
+		{9668D1F3-FE57-4C63-A9DA-822CF3F42494} = {E5D65724-860A-4092-A8C3-ED19D423A995}
+		{3DEE89AD-786A-474F-AD45-3B5D888EC7B2} = {E5D65724-860A-4092-A8C3-ED19D423A995}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA785396-047C-4781-BC4A-F8A3A1AF7394}
 	EndGlobalSection
 EndGlobal
