@@ -8,7 +8,7 @@ namespace SagaFlow.MvcProvider
     // Route attribute is required for ApiController's, but replaced at runtime
     // via MvcEndpointRouteConvention to resolve custom sagaflow parameters.
     [Route("[sagaflow-base-path]/resources/[resource-type]")]
-    public class ResourceController<T> : ControllerBase where T : new()
+    public class ResourceController<T> : ControllerBase
     {
         private readonly IResourceListProvider<T> resourceProvider;
 

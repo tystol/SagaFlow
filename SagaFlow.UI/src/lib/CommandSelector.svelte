@@ -25,7 +25,7 @@
     
     let store: Readable<ISagaFlowServerState>;
     
-    const onCommandSelected = (commandId: string) => dispatcher("sf-command-selected", { serverKey, commandId });
+    const onCommandSelected = (commandId: string) => dispatcher("sf-command-selected", { serverKey, commandId, command: $store.config.commands[commandId] });
     
     $: store = sagaFlow.state(serverKey);
     

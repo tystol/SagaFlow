@@ -73,6 +73,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Where(g => g.ResourceProviders.Count == 1)
                 .ToDictionary(g => g.IdType, g => g.ResourceProviders[0]);
             
+            RegisterResourceProviderInServiceCollection(services, resourceDefinitions);
+            
             //var commandTypes = options.CommandTypes.SelectMany(f => f()).ToList();
             var commands = options.Commands.SelectMany(f => f())
                 .Concat(options.CommandTypes.SelectMany(ct => ct().Select(t => BuildCommandFromType(t, typeBasedIdMap))))
@@ -151,6 +153,18 @@ namespace Microsoft.Extensions.DependencyInjection
             */
 
             return services;
+        }
+
+        private static void RegisterResourceProviderInServiceCollection(IServiceCollection services, List<ResourceProvider> resourceDefinitions)
+        {
+            foreach (var resourceDefinition in resourceDefinitions)
+            {
+                var resourceListProviderType = typeof(IResourceListProvider<>).MakeGenericType(resourceDefinition.Type);
+                
+                // Try to auto-register the resource provider, in-case the consuming application hasn't already registered
+                // a custom registration
+                services.TryAddScoped(resourceListProviderType, resourceDefinition.ProviderType);
+            }
         }
 
 
