@@ -129,7 +129,7 @@
       .parameters {
         display: grid;
         grid-template-columns: minmax(6rem, auto) auto 1fr;
-        grid-auto-rows: 1fr;
+        grid-auto-rows: auto;
         gap: 0.5rem;
 
         > .parameter {
