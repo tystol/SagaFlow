@@ -1,3 +1,10 @@
+using System.Text.Json;
+using AspnetIdentity.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Rebus.Config;
 using Rebus.Persistence.InMem;
 using Rebus.Routing.TypeBased;
@@ -13,14 +20,30 @@ using SimpleMvcExample.StrongTyping;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+//Setup for Asp.net Identity
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(connectionString));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<SimpleTaskHandler>();
 builder.Services.AddScoped<PeriodicJobHandler>();
 builder.Services.AddScoped<PeriodicAlternativeJobHandler>();
 builder.Services.AddScoped<SendMessageToTenant>();
 builder.Services.AddScoped<BackupDatabaseServerHandler>();
-builder.Services
-    .AddControllersWithViews()
-    .AddJsonOptions(options =>
+
+builder.Services.AddControllersWithViews();
+    // .AddJsonOptions(options =>
+    // {
+    //     options.JsonSerializerOptions.Converters.Add(new StronglyTypedIdJsonConverterFactory());
+    // });
+
+builder.Services.AddControllers(c =>
+{
+    c.RespectBrowserAcceptHeader = true;
+    c.Conventions.Add(new ApiAuthorizationConvention());
+}).AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new StronglyTypedIdJsonConverterFactory());
     });
@@ -61,6 +84,8 @@ void ConfigureRebusSagaStorage(StandardConfigurer<ISagaStorage> s)
         s.StoreInMemory();
 }
 
+
+
 // TODO: Look at running the web app as only for producing Saga msgs,
 // and a separate worker app for actually running the saga workflows.
 //services.AddSagaFlow(o => o.WithTransport(t => t.UsePostgreSqlAsOneWayClient(db, "messages")));
@@ -69,7 +94,6 @@ builder.Services.AddSagaFlow(o => o
     .AddHandlersFromAssemblyOf<SimpleTaskHandler>()
     .AddCommandsOfType<ICommand>()
     //.AddCommandFromEvent<StartSimpleTaskRequested>()
-    .WithLogging(l => l.Console())
     .WithTransport(ConfigureRebusTransport)
     .WithSubscriptionStorage(ConfigureRebusSubscriptions)
     .WithSagaStorage(ConfigureRebusSagaStorage)
@@ -77,6 +101,66 @@ builder.Services.AddSagaFlow(o => o
     //.WithTimeoutStorage(t => t.StoreInPostgres(db, "timeouts"))
     //, apiBasePath:"ocp"
     );
+
+// Configure default authentication
+builder.Services.AddAuthentication();
+
+// Configure authorization
+builder.Services.AddAuthorization(options =>
+{
+    // Define policy for authenticated users
+    options.AddPolicy("RequireAuthenticatedUser", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+    });
+});
+
+// builder.Services.AddAuthentication(options =>
+//     {
+//         options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//         options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+//     })
+//     .AddCookie(options => {
+//     // options.Cookie.SameSite = SameSiteMode.Lax;
+//     // options.LoginPath = "/Account/Login";
+//     // options.AccessDeniedPath = "/Account/AccessDenied";
+//
+//     options.Events = new CookieAuthenticationEvents
+//     {
+//         OnRedirectToLogin = ctx =>
+//         {
+//             if (IsApiRequest(ctx.Request))
+//             {
+//                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+//                 ctx.Response.ContentType = "application/json";
+//                 var result = JsonSerializer.Serialize(new { error = "Unauthorized" });
+//                 return ctx.Response.WriteAsync(result);
+//             }
+//             else
+//             {
+//                 ctx.Response.Redirect(ctx.RedirectUri);
+//                 return Task.CompletedTask;
+//             }
+//         },
+//         OnRedirectToAccessDenied = ctx =>
+//         {
+//             if (IsApiRequest(ctx.Request))
+//             {
+//                 ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+//                 ctx.Response.ContentType = "application/json";
+//                 var result = JsonSerializer.Serialize(new { error = "Forbidden" });
+//                 return ctx.Response.WriteAsync(result);
+//             }
+//             else
+//             {
+//                 ctx.Response.Redirect(ctx.RedirectUri);
+//                 return Task.CompletedTask;
+//             }
+//         }
+//     };
+// });
+
+// builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -89,6 +173,7 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
+    app.UseMigrationsEndPoint();
     app.UseCors(p => p
         .AllowAnyOrigin()
         .AllowAnyMethod()
@@ -101,13 +186,55 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Use custom middleware to handle anti-forgery token for API requests
+app.UseMiddleware<IgnoreAntiforgeryMiddleware>();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// For Asp.net Identity UI
+app.MapRazorPages();
+
+// Apply authorization to API endpoints
+app.Use(async (context, next) =>
+{
+    // Check if it's an API request
+    if (IsApiRequest(context.Request))
+    {
+        var endpoint = context.GetEndpoint();
+        if (endpoint?.Metadata.GetMetadata<ApiControllerAttribute>() != null ||
+            context.Request.Path.StartsWithSegments("/api"))
+        {
+            // Apply authorization policy to API controllers
+            var policy = context.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>()
+                .GetPolicyAsync("RequireAuthenticatedUser");
+            var authorizationService = context.RequestServices.GetRequiredService<IAuthorizationService>();
+            var authResult = await authorizationService.AuthorizeAsync(context.User,"RequireAuthenticatedUser");
+            if (!authResult.Succeeded)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsync("Unauthorized");
+                return;
+            }
+        }
+    }
+    await next();
+});
+
+
 app.UseSagaFlow();
 
 app.Run();
+
+bool IsApiRequest(HttpRequest request)
+{
+    return request.Path.StartsWithSegments("/api") || request.Headers["Accept"].ToString().Contains("application/json");
+}
+
+public partial class Program { }
 
