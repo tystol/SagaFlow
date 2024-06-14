@@ -2,6 +2,29 @@
     ViewData["Title"] = "Home Page";
 }
 
+<style lang="css">
+    body {
+        /* Custom styles applied to SagaFlow via CSS variables  */
+        --sf-command-selector-label-display: none;
+        --sf-command-selector-label-padding: 0.25rem 1rem;
+        --sf-command-selector-label-font-size: 1rem;
+        --sf-command-selector-value-padding: 0.25rem 1rem;
+        --sf-command-selector-value-font-size: 1rem;
+        
+        --sf-command-form-name-font-size: 2rem;
+        --sf-command-form-grid-template: "a b" auto / minmax(6rem, auto) 1fr;
+        --sf-command-form-parameters-padding: 0 0 2rem 0;
+        --sf-command-form-parameter-description-grid-column: 1 / span 2;
+        --sf-command-form-parameter-name-alignment: left;
+        --sf-command-form-parameter-value-padding: 0.25rem 1rem;
+        --sf-command-form-parameter-description-font-style: italic;
+        
+        /* Hiding builtin form buttons on the comment form, we will provide our own */
+        --sf-command-form-submit-display: none;
+        --sf-command-form-reset-display: none;
+    }
+</style>
+
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>
@@ -14,6 +37,9 @@
         
     <sf-command-selector id="myCommandSelector"></sf-command-selector>
     <sf-command-form id="myCommandForm" commandId="backup-database-server"></sf-command-form>
+    
+    <button id="myCustomSubmit" type="button">Submit Button</button>
+    <button id="myCustomReset" type="button">Reset</button>
 </div>
 
 <div id="command-successful-toast" class="toast bg-primary text-white fade" style="position: absolute; top: 1rem; right: 1rem;" data-delay="10000">
@@ -49,12 +75,24 @@
                     console.log("Command Selected: ", e.detail);
                     
                     myCommandForm.commandId = e.detail.commandId;
-                });
+                }
+            );
              
             // When a command has been successfully sent to the server display a successful message
             myCommandForm.addEventListener(
                 'sf-command-success', 
-                (e) => showSuccess(e.detail.commandId, e.detail.command));   
+                (e) => showSuccess(e.detail.commandId, e.detail.command)
+            );   
+            
+            myCustomSubmit.addEventListener(
+                'click',
+                (e) => myCommandForm.submit()
+            );
+            
+            myCustomReset.addEventListener(
+                'click',
+                (e) => myCommandForm.reset()
+            );
         }
     )
     
