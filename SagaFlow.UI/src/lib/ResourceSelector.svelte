@@ -15,7 +15,7 @@
 
 {#if resources}
     {#await resources}
-        <span>loading ...</span>
+        <span class="loading">loading ...</span>
     {:then resources}
         <select id={parameterId} name={parameterId} required={parameter.required} {disabled}>
             <option selected></option>
@@ -25,6 +25,25 @@
             {/each}
         </select>
     {:catch err}
-        {err}
+        <span class="error">{err}</span>
     {/await}
 {/if}
+
+<style lang="scss">
+    select {
+      padding: var(--sf-command-form-parameter-value-padding, initial);
+      font-size: var(--sf-command-form-parameter-value-font-size, initial);
+      width: var(--sf-command-form-parameter-value-width, 100%);
+      border: var(--sf-command-form-parameter-value-border, revert);
+    }
+    
+    .loading {
+      color: var(--sf-command-form-loading, initial);;
+    }
+    
+    .error {
+      background: var(--sf-command-form-error-background, red);
+      color: var(--sf-command-form-error, white);
+      padding: var(--sf-command-form-error-padding,  1rem 0.5rem);
+    }
+</style>

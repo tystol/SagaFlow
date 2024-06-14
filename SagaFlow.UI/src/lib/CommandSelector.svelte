@@ -44,3 +44,19 @@
         </select>
     </div>
 </div>
+
+<style lang="scss">
+    .command-selector {
+      > label {
+        display: var(--sf-command-selector-label-display, initial);
+        padding: var(--sf-command-selector-label-padding, initial);
+        font-size: var(--sf-command-selector-label-font-size, 1rem);
+      }
+      
+      select {
+        padding: var(--sf-command-selector-value-padding, initial);
+        font-size: var(--sf-command-selector-value-font-size, 1rem);
+        width: var(--sf-command-form-parameter-value-width, auto);
+      }
+    }
+</style>
