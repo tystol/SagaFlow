@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

@@ -7,10 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SagaFlow.AspNetCore\SagaFlow.AspNetCore.csproj" />
     <ProjectReference Include="..\SimpleMvcExample.Messages\SimpleMvcExample.Messages.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SagaFlow\SagaFlow.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>

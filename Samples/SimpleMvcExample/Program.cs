@@ -5,7 +5,6 @@ using Rebus.Sagas;
 using Rebus.Subscriptions;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
-using SagaFlow;
 using SimpleMvcExample.CommandHandlers;
 using SimpleMvcExample.Messages;
 using SimpleMvcExample.ResourceProviders;

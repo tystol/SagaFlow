@@ -1,5 +1,4 @@
-﻿using System;
-namespace SagaFlow
+﻿namespace SagaFlow
 {
     public interface ISagaCommandProvider
     {
