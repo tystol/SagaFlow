@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using SagaFlow.Interfaces;
 
 namespace SimpleMvcExample.Messages
 {
@@ -10,6 +11,7 @@ namespace SimpleMvcExample.Messages
         
         [DisplayName("Destination Filename")]
         [Description("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel turpis vel diam dignissim euismod ut non velit. Integer eget.")]
+        [StringPropertySuggestions(ResourceProviderName = "FilenameSuggestionProvider")]
         public string? DestinationFilename { get; init; }
         
         [DisplayName("Override backup")]
