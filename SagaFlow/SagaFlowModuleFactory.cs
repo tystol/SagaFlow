@@ -113,6 +113,7 @@ public static class SagaFlowModuleFactory
             .ToList();
 
         var commandName = GetCommandName(commandType);
+        var commandDescription = GetCommandDescription(commandType);
         var cronExpression = GetCronExpression(commandType);
 
         return new Command
@@ -120,6 +121,7 @@ public static class SagaFlowModuleFactory
             Id = commandType.Name.ToKebabCase(),
             CommandType = commandType,
             Name = commandName,
+            Description = commandDescription,
             EventType = null,
             CronExpression = cronExpression,
             Parameters = parameterProps.Select(p => new CommandParameter
@@ -137,7 +139,9 @@ public static class SagaFlowModuleFactory
                 .ToList()
         };
     }
-    
+
+   
+
     private static ResourceProvider GetTextSuggestionResourceProvider(PropertyInfo propertyInfo, IDictionary<Type, ResourceProvider> resourceProviderMap)
     {
         // only use Suggestion resource providers for string
@@ -173,6 +177,13 @@ public static class SagaFlowModuleFactory
         }
 
         return commandType.Name;
+    }
+    
+    private static string GetCommandDescription(Type commandType)
+    {
+        var descriptionAttribute = commandType.GetCustomAttribute<DescriptionAttribute>();
+
+        return descriptionAttribute?.Description;
     }
 
     private static string GetCronExpression(Type commandType)

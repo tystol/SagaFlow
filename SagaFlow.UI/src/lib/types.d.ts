@@ -25,6 +25,7 @@ export type Parameter = {
 
 export type Command = {
     name: string;
+    description: string;
     href: string;
     parameters: Record<string, Parameter>;
 };
