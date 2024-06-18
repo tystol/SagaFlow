@@ -106,6 +106,9 @@
     {#if lastErrorMessage}
         <div class="error">{lastErrorMessage}</div>
     {/if}
+    {#if commandDefinition.description}
+        <div class="description">{commandDefinition.description}</div>
+    {/if}
     <div class="parameters">
         {#each Object.entries(commandDefinition.parameters) as [parameterId, parameter]}
             {@const resourceList = parameter.resourceListId ? config.resourceLists[parameter.resourceListId] : null}
@@ -144,6 +147,13 @@
         font-size: var(--sf-command-form-name-font-size, 1.125rem);
         display: var(--sf-command-form-name-display, inherit);
         font-weight: var(--sf-command-form-name-font-weight, bold);
+      }
+
+      > .description {
+        font-size: var(--sf-command-form-description-font-size, initial);
+        display: var(--sf-command-form-description-display, inherit);
+        font-weight: var(--sf-command-form-description-font-weight, initial);
+        padding: var(--sf-command-form-description-padding, 1rem 0);
       }
       
       > .error {

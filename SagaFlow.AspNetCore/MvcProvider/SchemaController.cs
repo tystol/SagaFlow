@@ -39,6 +39,7 @@ namespace SagaFlow.MvcProvider
                     .ToDictionary(c => c.Id, c => new CommandDefinition
                     {
                         Name = c.Name,
+                        Description = c.Description,
                         Href = c.RouteTemplate, // TODO: proper route resolution
                         Parameters = c.Parameters
                             .ToDictionary(p => p.Id, p => new ParameterDefinition
@@ -76,9 +77,10 @@ namespace SagaFlow.MvcProvider
 
     public class CommandDefinition
     {
-        public string Name { get; set; }
-        public string Href { get; set; }
-        public IDictionary<string,ParameterDefinition> Parameters { get; set; }
+        public string Name { get; init; }
+        public string Description { get; init; }
+        public string Href { get; init; }
+        public IDictionary<string,ParameterDefinition> Parameters { get; init; }
     }
 
     public class ParameterDefinition
