@@ -226,7 +226,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var commandName = GetCommandName(commandType);
             var cronExpression = GetCronExpression(commandType);
-
+            
             return new Command
             {
                 Id = commandType.Name.ToKebabCase(),
@@ -240,11 +240,27 @@ namespace Microsoft.Extensions.DependencyInjection
                     Name = p.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault()?.DisplayName ?? p.PropertyInfo.Name,
                     Description = p.Attributes.OfType<DescriptionAttribute>().FirstOrDefault()?.Description,
                     InputType = p.PropertyInfo.PropertyType,
-                    ResourceProvider = resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
+                    ResourceProvider = 
+                        GetTextSuggestionResourceProvider(p.PropertyInfo, resourceProviderMap) ?? 
+                            resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
                     // TODO: Provide alternative to above to map resource providers to command properties. eg. attribute based.
                 })
                 .ToList(),
             };
+        }
+
+        private static ResourceProvider GetTextSuggestionResourceProvider(PropertyInfo propertyInfo, IDictionary<Type, ResourceProvider> resourceProviderMap)
+        {
+            // only use Suggestion resource providers for string
+            if (propertyInfo.PropertyType != typeof(string)) return null;
+
+            var textSuggestionAttribute = propertyInfo.GetCustomAttribute<StringPropertySuggestionsAttribute>();
+
+            return resourceProviderMap.Values.FirstOrDefault(
+                provider =>
+                    provider.ProviderType == textSuggestionAttribute?.ResourceProviderType ||
+                    provider.ProviderType.FullName == textSuggestionAttribute?.ResourceProviderName ||
+                    provider.ProviderType.Name == textSuggestionAttribute?.ResourceProviderName);
         }
 
         private static string GetCommandName(Type commandType)

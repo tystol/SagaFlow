@@ -11,6 +11,7 @@
         createWebComponentEventDispatcher,
         extendToGetWebComponentRoot
     } from "$lib/RootWebComponentEventDispatcher";
+    import StringParameter from "$lib/StringParameter.svelte";
     
 
     // When used as a web-component, this is required to dispatch events from the web component
@@ -115,7 +116,7 @@
                 
                 <div class="value">
                 {#if parameter.type === "String"}
-                    <input type="text" id={parameterId} name={parameterId} required={parameter.required} disabled={sendingCommand} />
+                    <StringParameter {serverKey} {parameterId} {parameter} disabled={sendingCommand} />
                 {:else if parameter.type === "Boolean"}
                     <label class="value-yes"><input type="radio" id={`${parameterId}_yes`} name={parameterId} required={parameter.required} value={true} disabled={sendingCommand}>Yes</label>
                     <label class="value-no"><input type="radio" id={`${parameterId}_no`} name={parameterId} required={parameter.required} value={false} disabled={sendingCommand}>No</label>
