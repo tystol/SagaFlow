@@ -34,11 +34,12 @@
 
     // Public method to allow programmatically triggering the command form to submit from the web component instance
     export const submit = async () => {
-        await sendCommand();
+        if (form.reportValidity()) await sendCommand();
     }
 
     // Public method to allow programmatically triggering the command form to be reset from the web component instance
     export const reset = () => {
+        
         form.reset();
     }
     
