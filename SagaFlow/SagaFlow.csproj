@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <Title>SagaFlow</Title>
     <PackageProjectUrl>https://github.com/tystol/SagaFlow</PackageProjectUrl>
@@ -10,11 +9,9 @@
     
     <!-- allows rebuild when there are changes to SagaFlow.UI changes -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <TargetFrameworks>net8.0;net6.0;net7.0</TargetFrameworks>
+    <PackageId>SagaFlow</PackageId>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NCrontab.Scheduler" Version="1.2.10" />
@@ -35,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MvcProvider\" />
     <Folder Include="Schema\" />
   </ItemGroup>
 

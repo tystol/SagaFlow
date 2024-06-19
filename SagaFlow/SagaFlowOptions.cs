@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Rebus.Config;
 using Rebus.Routing;
 using Rebus.Sagas;
-using Rebus.ServiceProvider;
 using Rebus.Subscriptions;
 using Rebus.Timeouts;
 using Rebus.Transport;
