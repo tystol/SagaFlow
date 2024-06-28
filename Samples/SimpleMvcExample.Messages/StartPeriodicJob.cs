@@ -2,7 +2,7 @@
 
 namespace SimpleMvcExample.Messages
 {
-    [DisplayName("Periodic Job [cron: */15 * * * * *]")] // Every 15 seconds
+    [DisplayName("Periodic Job [cron: 0 */5 * * * *]")] // Every 15 seconds
     public record StartPeriodicJob : ICommand
     {
         

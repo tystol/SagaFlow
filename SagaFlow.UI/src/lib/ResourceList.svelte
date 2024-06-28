@@ -1,6 +1,6 @@
 <svelte:options customElement="sf-resource-list"/>
 <script lang="ts">
-    import type {ResourceList} from "./types";
+    import type {ResourceList} from "./Models";
     import sagaFlow, {defaultSagaFlowServer, type ISagaFlowServerState} from "../state/SagaFlowState";
     import type {Readable} from "svelte/store";
 

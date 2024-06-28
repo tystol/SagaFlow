@@ -1,6 +1,6 @@
 <script lang="ts">
     import sagaFlow from "../state/SagaFlowState";
-    import type {Parameter, Resource} from "$lib/types";
+    import type {Parameter, Resource} from "$lib/Models";
     
     export let serverKey: string;
     export let resourceId: string;

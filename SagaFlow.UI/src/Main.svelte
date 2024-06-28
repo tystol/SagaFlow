@@ -9,7 +9,7 @@
   import {setContext} from "svelte";
   import {type Readable, writable, type Writable} from "svelte/store";
   import sagaFlow, {defaultSagaFlowServer, type ISagaFlowServerState} from "./state/SagaFlowState";
-  import type {Config, Setup} from "$lib/types";
+  import type {Config, Setup} from "$lib/Models";
   import {
       createWebComponentEventDispatcher,
       extendToGetWebComponentRoot

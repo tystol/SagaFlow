@@ -7,6 +7,7 @@ namespace SagaFlow.Schema
     {
         public string Id { get; internal set; }
         public string Name { get; internal set; }
+        public string CommandNameTemplate { get; internal set; }
         public string Description { get; internal set; }
         public Type CommandType { get; internal set; }
         public Type EventType { get; internal set; }

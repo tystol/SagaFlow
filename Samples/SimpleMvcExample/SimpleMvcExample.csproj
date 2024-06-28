@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SagaFlow.AspNetCore\SagaFlow.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\SagaFlow.SignalR\SagaFlow.SignalR.csproj" />
     <ProjectReference Include="..\SimpleMvcExample.Messages\SimpleMvcExample.Messages.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>

@@ -4,7 +4,7 @@
     extend: extendToGetWebComponentRoot
 }} />
 <script lang="ts">
-    import type {Command, Config} from "$lib/types";
+    import type {Command, Config} from "$lib/Models";
     import sagaFlow, {defaultSagaFlowServer} from "../state/SagaFlowState";
     import ResourceSelector from "$lib/ResourceSelector.svelte";
     import {
