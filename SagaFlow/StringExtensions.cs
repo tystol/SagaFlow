@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 
 namespace SagaFlow
@@ -75,6 +76,15 @@ namespace SagaFlow
                 }
             }
             return builder.ToString();
+        }
+
+        public static string ToTitleCase(this string source)
+        {
+            if (string.IsNullOrWhiteSpace(source)) return source;
+            
+            var cultureInfo = CultureInfo.CurrentCulture.TextInfo;
+
+            return cultureInfo.ToTitleCase(source);
         }
     }
 }

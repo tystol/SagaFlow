@@ -55,6 +55,14 @@ namespace SagaFlow.MvcProvider
 
                 routeSelector.AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routeTemplate));
             }
+            
+            if (controller.ControllerType == typeof(CommandStatusController))
+            {
+                var (routeSelector, routeTemplate) = GetRoute(controller);
+                routeTemplate = routeTemplate.Replace("[sagaflow-base-path]", module.ApiBasePath);
+
+                routeSelector.AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routeTemplate));
+            }
         }
 
         private static (SelectorModel routeSelector, string routeTemplate) GetRoute(ControllerModel controller)

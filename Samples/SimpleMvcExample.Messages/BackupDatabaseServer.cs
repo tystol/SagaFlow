@@ -3,8 +3,9 @@ using SagaFlow.Interfaces;
 
 namespace SimpleMvcExample.Messages
 {
-    [DisplayName("Backup Database Server")]
-    [Description("Backup the selected database to the provided file name.")]
+    [Command("Backup Database Server",
+        Description = "Backup the selected database to the provided file name.",
+        NameTemplate = "Backup {DatabaseServerId} to {DestinationFilename}")]
     public class BackupDatabaseServer : ICommand
     {
         [DisplayName("Database Server")]

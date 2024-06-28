@@ -55,7 +55,8 @@ public static class SagaFlowModuleFactory
         {
             ApiBasePath = apiBasePath,
             Commands = commands,
-            ResourceProviders = resourceDefinitions
+            ResourceProviders = resourceDefinitions,
+            SageFlowStartup = options.HostHandlerSetup
         };
         return sagaFlowModule;
     }
@@ -114,6 +115,7 @@ public static class SagaFlowModuleFactory
 
         var commandName = GetCommandName(commandType);
         var commandDescription = GetCommandDescription(commandType);
+        var commandNameTemplate = GetCommandNameTemplate(commandType);
         var cronExpression = GetCronExpression(commandType);
 
         return new Command
@@ -121,6 +123,7 @@ public static class SagaFlowModuleFactory
             Id = commandType.Name.ToKebabCase(),
             CommandType = commandType,
             Name = commandName,
+            CommandNameTemplate = commandNameTemplate,
             Description = commandDescription,
             EventType = null,
             CronExpression = cronExpression,
@@ -181,9 +184,20 @@ public static class SagaFlowModuleFactory
     
     private static string GetCommandDescription(Type commandType)
     {
+        var commandAttribute = commandType.GetCustomAttribute<CommandAttribute>();
+        if (commandAttribute != null && !string.IsNullOrEmpty(commandAttribute.Description))
+            return commandAttribute.Description;
+        
         var descriptionAttribute = commandType.GetCustomAttribute<DescriptionAttribute>();
 
         return descriptionAttribute?.Description;
+    }
+    
+    private static string GetCommandNameTemplate(Type commandType)
+    {
+        var descriptionAttribute = commandType.GetCustomAttribute<CommandAttribute>();
+
+        return descriptionAttribute?.NameTemplate;
     }
 
     private static string GetCronExpression(Type commandType)

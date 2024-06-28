@@ -5,6 +5,7 @@ using Rebus.Sagas;
 using Rebus.Subscriptions;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
+using SagaFlow.SignalR;
 using SimpleMvcExample.CommandHandlers;
 using SimpleMvcExample.Messages;
 using SimpleMvcExample.ResourceProviders;
@@ -74,6 +75,9 @@ builder.Services.AddSagaFlow(o => o
     .WithSubscriptionStorage(ConfigureRebusSubscriptions)
     .WithSagaStorage(ConfigureRebusSagaStorage)
     .WithRouting(r => r.TypeBased().MapAssemblyOf<ICommand>(inputQueueName))
+    .WithSignalR()
+    .WithSystemUsername("System")
+    .WithAnonymousUsername("Anonymous")
     //.WithTimeoutStorage(t => t.StoreInPostgres(db, "timeouts"))
     //, apiBasePath:"ocp"
     );

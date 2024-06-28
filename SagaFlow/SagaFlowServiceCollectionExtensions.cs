@@ -5,8 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
+using SagaFlow.Authentications;
 using SagaFlow.Recurring;
 using SagaFlow.Schema;
+using SagaFlow.Status;
 
 namespace SagaFlow;
 
@@ -24,6 +26,9 @@ public static class SagaFlowServiceCollectionExtensions
 
         services.TryAddSingleton(sagaFlowModule);
         services.TryAddSingleton<ISagaFlowSchemaProvider>(sagaFlowModule);
+        services.AddTransient<IHumanReadableCommandPropertiesResolver, HumanReadableCommandPropertiesResolver>();
+        services.AddTransient<IHumanReadableCommandNameResolver, HumanReadableCommandNameResolver>();
+        services.AddTransient<ISagaFlowCommandStatusService, SagaFlowCommandStatusService>();
 
         // Configure and register Rebus
         services.AddRebus(c =>
@@ -48,12 +53,22 @@ public static class SagaFlowServiceCollectionExtensions
                 if (options.TimeoutConfigurer != null)
                     c = c.Timeouts(options.TimeoutConfigurer);
 
+                c.ConfigureSagaFlowEventsForRebus(sagaFlowModule);
+
                 return c;
             },
             onCreated: bus =>
             {
                 return Task.WhenAll(sagaFlowModule.Commands.Select(c => bus.Subscribe(c.CommandType)));
             });
+
+        services.AddTransient<ISagaFlowCommandContext, SagaFlowRebusCommandContext>();
+        
+        // Fallback registration of the InMemorySagaFlowCommandStore if no ISagaFlowCommandStore was registered
+        services.TryAddTransient<ISagaFlowCommandStore, InMemorySagaFlowCommandStore>();
+        
+        // Fallback registration of IUsernameProvider
+        services.TryAddTransient<IUsernameProvider, StubUsernameProvider>();
 
         services.AddHostedService<CronRecurringCommandsBackgroundService>();
         return services;

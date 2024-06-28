@@ -1,5 +1,12 @@
-import type {Config, Resource, Setup} from "$lib/types";
+import type {
+    Config,
+    PagedResultCommandStatus,
+    Resource,
+    Setup
+} from "$lib/Models";
+import { tick } from "svelte"
 import {get, type Readable, writable, type Writable} from "svelte/store";
+import {SagaFlowSignalRHubClient} from "./SagaFlowSingalRHubClient";
 
 export interface ISagaFlowServerState {
     setup: Setup;
@@ -9,6 +16,11 @@ export interface ISagaFlowServerState {
     
     config: Config;
     resourceCache: Record<string, Resource[]>;
+
+    hasCommandStatuses: boolean;
+    commandStatuses: PagedResultCommandStatus;
+    
+    signalRHub?: SagaFlowSignalRHubClient
 }
 
 // Using a convenient placeholder text that can be used to replace the sagaFlow route defined
@@ -30,7 +42,16 @@ const initialState: ISagaFlowServerState = {
         resourceLists: {}
     },
     
-    resourceCache: {}
+    resourceCache: {},
+
+    hasCommandStatuses: false,
+    commandStatuses: {
+        page: [],
+        keyword: '',
+        pageIndex: 0,
+        pageSize: 20,
+        total: 0
+    }
 }
 
 export const defaultSagaFlowServer: string = "__default_saga_flow_server__";
@@ -164,6 +185,39 @@ class SagaFlow
        }
     }
     
+    public async getStatuses(pageIndex: number, pageSize: number, keyword: string, serverKey: string = defaultSagaFlowServer) {
+        const store = this.getServerStore(serverKey)
+        const { setup} = get(store);
+        
+        console.debug("SagaFlow.getStatuses: started");
+
+        console.debug(`SagaFlow.getStatuses:   sending command: pageIndex: ${pageIndex}, pageSize: ${pageSize}, keyworkd: ${keyword}`);
+
+        const response = await fetch(`${setup.baseUrl}/${setup.apiRoot}/commands?pageIndex=${pageIndex}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`);
+
+        if (!response.ok) throw Error(`Unable to fetch statuses`);
+
+        if (response.ok) {
+            const data: PagedResultCommandStatus = await response.json();
+
+            store.update(s => ({
+                ...s,
+                hasCommandStatuses: true,
+                commandStatuses: {
+                    ... data,
+                    keyword,
+                    page: data.page.map(item => ({ 
+                        ... item,
+                        startDateTime: new Date(item.startDateTime), 
+                        finishDateTime: item.finishDateTime && new Date(item.finishDateTime)
+                    }))
+                }
+            }))
+
+            return data;
+        }
+    }
+    
     private async processInitializationResponse(setup: Setup, response: Response, serverKey: string)
     {
         if (!response.ok)
@@ -180,6 +234,16 @@ class SagaFlow
             hasErrorFetchingConfig: false,
             fetchConfigError: undefined,
             config
+        }));
+        
+        await tick();
+
+        const signalRHub = new SagaFlowSignalRHubClient(serverKey, store);
+        await signalRHub.start();
+
+        store.update(s => ({
+            ... s,
+            signalRHub
         }))
     }
 
@@ -195,7 +259,7 @@ class SagaFlow
         }))
     }
     
-    private getServerStore(serverKey: string): Writable<ISagaFlowServerState> | undefined
+    private getServerStore(serverKey: string): Writable<ISagaFlowServerState>
     {
         return this._servers[serverKey];
     }
@@ -209,7 +273,6 @@ class SagaFlow
         
         return store;
     }
-    
 }
 
 const sagaFlow: SagaFlow = new SagaFlow();

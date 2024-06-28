@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {Parameter, Resource} from "$lib/types";
+    import type {Parameter, Resource} from "$lib/Models";
     import sagaFlow from "../state/SagaFlowState";
 
     export let serverKey: string;

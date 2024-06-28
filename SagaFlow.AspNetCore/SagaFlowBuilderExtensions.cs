@@ -20,6 +20,13 @@ namespace Microsoft.AspNetCore.Builder
             this IApplicationBuilder app)
         {
             var module = app.ApplicationServices.GetRequiredService<SagaFlowModule>();
+            module.ServiceProvider = app.ApplicationServices;
+
+            foreach (var startupAction in module.SageFlowStartup)
+            {
+                startupAction.Invoke(app);
+            }
+            
             var provider =
                 new ManifestEmbeddedFileProvider(assembly: Assembly.GetAssembly(typeof(SagaFlowModule)), "UI");
             var path = new PathString("/" + module.ApiBasePath);
