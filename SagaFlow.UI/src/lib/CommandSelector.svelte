@@ -24,6 +24,10 @@
     export let commandId: string | undefined = undefined;
     
     let store: Readable<ISagaFlowServerState>;
+
+    export const clear = () => {
+        commandId = undefined;
+    }
     
     const onCommandSelected = (commandId: string) => dispatcher("sf-command-selected", { serverKey, commandId, command: $store.config.commands[commandId] });
     
