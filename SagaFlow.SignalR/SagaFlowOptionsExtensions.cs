@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using SagaFlow.AspNetCore.Formatters;
@@ -25,11 +26,7 @@ public static class SagaFlowOptionsExtensions
         options.AddHostSetup(
             host =>
             {
-                if (host is not IEndpointRouteBuilder endpointBuilder)
-                {
-                    throw new InvalidOperationException(
-                        "SagaFlow SignalR can only be added to an AspNet.Core application");
-                }
+                var endpointBuilder = GetEndpointBuilder(host);
                     
                 var sagaFlowModule = endpointBuilder.ServiceProvider.GetRequiredService<SagaFlowModule>();
 
@@ -37,5 +34,26 @@ public static class SagaFlowOptionsExtensions
             });
         
         return options;
+    }
+
+    private static IEndpointRouteBuilder GetEndpointBuilder(object hostBuilder)
+    {
+        if (hostBuilder is IEndpointRouteBuilder endpointBuilder)
+        {
+            return endpointBuilder;
+        }
+        
+        if (hostBuilder is IApplicationBuilder applicationBuilder)
+        {
+            endpointBuilder = applicationBuilder.Properties
+                .Select(p => p.Value)
+                .FirstOrDefault(value => value is IEndpointRouteBuilder) as IEndpointRouteBuilder ?? throw new InvalidOperationException(
+                "SagaFlow SignalR requires routing");
+
+            return endpointBuilder;
+        }
+        
+        throw new InvalidOperationException(
+            "SagaFlow SignalR can only be added to an AspNet.Core application");
     }
 }
