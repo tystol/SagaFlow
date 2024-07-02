@@ -68,8 +68,9 @@ export const createWebComponentEventDispatcher =  (rootWebComponentHtmlElement: 
     
     return <T>(eventName: string, detail:T) => {
         // Need to handle null in-case we are on the SagaFlow route, where no WebComponents are being used.
-        rootWebComponentEventDispatcher?.dispatch(eventName, detail);
-
-        svelteEventDispatcher(eventName, detail);
+        if (rootWebComponentHtmlElement)
+            rootWebComponentEventDispatcher?.dispatch(eventName, detail);
+        else
+            svelteEventDispatcher(eventName, detail);
     };
 }
