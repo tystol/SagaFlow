@@ -137,6 +137,7 @@
 
 <style lang="scss">
     .command-statuses {
+      width: var(--sf-comand-status-width, 100%);
       
       .command-statuses-search-container {
         text-align: var(--sf-command-status-search-alignment, left);
@@ -163,14 +164,14 @@
         color: var(--sf-command-status-cell-color, inherit);
         font-style: var(--sf-command-status-cell-font-style, inherit);
         font-weight: var(--sf-command-status-cell-font-weight, inherit);
-        font: var(--sf-command-status-cell-font, inherit);
+        font-family: var(--sf-command-status-cell-font, inherit);
       }
 
       th.command-status-col {
         color: var(--sf-command-status-header-color, inherit);
         font-style: var(--sf-command-status-header-font-style, inherit);
         font-weight: var(--sf-command-status-header-font-weight, inherit);
-        font: var(--sf-command-status-header-font, inherit);
+        font-family: var(--sf-command-status-header-font, inherit);
       }
       
       .command-status-row {
