@@ -137,7 +137,8 @@
 
 <style lang="scss">
     .command-statuses {
-      width: var(--sf-comand-status-width, 100%);
+      width: var(--sf-command-status-width, 100%);
+      border-spacing: var(--sf-command-status-border-spacing, 0);
       
       .command-statuses-search-container {
         text-align: var(--sf-command-status-search-alignment, left);
