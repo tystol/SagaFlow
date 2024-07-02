@@ -148,6 +148,12 @@
           border: var(--sf-command-status-search-border, revert);
         }
       }
+
+      thead {
+        tr {
+          background: var(--sf-command-status-header-background, inherit) !important;
+        }
+      }
       
       td.command-status-col, th.command-status-col {
         padding: var(--sf-command-status-cell-padding, 1rem 0.25rem);
@@ -168,46 +174,19 @@
       }
       
       .command-status-row {
+        background: var(--sf-command-status-background, inherit) !important;
+        
         i::after {
           font-style: var(--sf-command-status-icon-font-style, normal) !important;
         }
         
-        .icon-col {
-          display: var(--sf-command-status-icon-column-display, table-cell);
-          width: var(--sf-command-status-icon-column-width, auto);
-        }
-        
-        .command-col {
-          display: var(--sf-command-status-command-column-display, table-cell);
-          width: var(--sf-command-status-command-column-width, auto);
-        }
-        
-        .name-col {
-          display: var(--sf-command-status-name-column-display, table-cell);
-          width: var(--sf-command-status-name-column-width, auto);
-        }
-        .user-col {
-          display: var(--sf-command-status-user-column-display, table-cell);
-          width: var(--sf-command-status-user-column-width, auto);
-        }
-        
-        .start-col {
-          display: var(--sf-command-status-start-column-display, table-cell);
-          width: var(--sf-command-status-start-column-width, auto);
-        }
-        
-        .finish-col {
-          display: var(--sf-command-status-finish-column-display, table-cell);
-          width: var(--sf-command-status-finish-column-width, auto);
-        }
-        
-        .progress-col {
-          display: var(--sf-command-status-progress-column-display, table-cell);
-          width: var(--sf-command-status-progress-column-width, auto);
+        &:hover {
+          background: var(--sf-command-status-hover-background, inherit) !important;
         }
 
         &-selected {
           font-weight: var(--sf-command-status-selected-font-weight, bold) !important;
+          background: var(--sf-command-status-selected-background, inherit) !important;
         }
         
         &-started {
@@ -254,6 +233,47 @@
           }
           
         }
+      }
+
+      .icon-col {
+        display: var(--sf-command-status-icon-column-display, table-cell);
+        width: var(--sf-command-status-icon-column-width, auto);
+        text-align: var(--sf-command-status-icon-column-align, var(--sf-command-status-column-align, left));
+      }
+
+      .command-col {
+        display: var(--sf-command-status-command-column-display, table-cell);
+        width: var(--sf-command-status-command-column-width, auto);
+        text-align: var(--sf-command-status-command-column-align, var(--sf-command-status-column-align, left));
+      }
+
+      .name-col {
+        display: var(--sf-command-status-name-column-display, table-cell);
+        width: var(--sf-command-status-name-column-width, auto);
+        text-align: var(--sf-command-status-name-column-align, var(--sf-command-status-column-align, left));
+      }
+      .user-col {
+        display: var(--sf-command-status-user-column-display, table-cell);
+        width: var(--sf-command-status-user-column-width, auto);
+        text-align: var(--sf-command-status-user-column-align, var(--sf-command-status-column-align, left));
+      }
+
+      .start-col {
+        display: var(--sf-command-status-start-column-display, table-cell);
+        width: var(--sf-command-status-start-column-width, auto);
+        text-align: var(--sf-command-status-start-column-align, var(--sf-command-status-column-align, left));
+      }
+
+      .finish-col {
+        display: var(--sf-command-status-finish-column-display, table-cell);
+        width: var(--sf-command-status-finish-column-width, auto);
+        text-align: var(--sf-command-status-finish-column-align, var(--sf-command-status-column-align, left));
+      }
+
+      .progress-col {
+        display: var(--sf-command-status-progress-column-display, table-cell);
+        width: var(--sf-command-status-progress-column-width, auto);
+        text-align: var(--sf-command-status-progress-column-align,  var(--sf-command-status-column-align, left));
       }
     }
 </style>
