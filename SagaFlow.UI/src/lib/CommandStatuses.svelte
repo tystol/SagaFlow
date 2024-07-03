@@ -47,12 +47,10 @@
 </script>
 
 <table class="command-statuses">
+    <caption class="command-statuses-search-container">
+        <input class="command-statuses-search" type="search" placeholder={searchPlaceholderText} bind:value={keyword} />
+    </caption>
     <thead>
-        <tr>
-            <th class="command-statuses-search-container" colspan="7">
-                <input class="command-statuses-search" type="search" placeholder={searchPlaceholderText} bind:value={keyword} />
-            </th>
-        </tr>
         <tr>
             <td class="command-status-col icon-col"></td>
             <th class="command-status-col command-col">
@@ -139,6 +137,7 @@
     .command-statuses {
       width: var(--sf-command-status-width, 100%);
       border-spacing: var(--sf-command-status-border-spacing, 0);
+      caption-side: top;
       
       .command-statuses-search-container {
         text-align: var(--sf-command-status-search-alignment, left);
@@ -148,6 +147,7 @@
           font-size: var(--sf-command-status-search-font-size, initial);
           width: var(--sf-command-status-search-width, auto);
           border: var(--sf-command-status-search-border, revert);
+          border-radius: var(--sf-command-status-search-border-radius, unset);
         }
       }
 
