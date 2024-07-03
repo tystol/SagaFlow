@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rebus.Config;
+using Rebus.Retry.Simple;
 using Rebus.Routing.TypeBased;
 using SagaFlow.Authentications;
 using SagaFlow.Recurring;
@@ -36,6 +37,9 @@ public static class SagaFlowServiceCollectionExtensions
                 // TODO split saga client vs host, similar to this:
                 // https://github.com/rebus-org/RebusSamples/blob/1e18159f39bdce3f7a36dff022750908f602d7b5/Sagas/Common/CommonRebusConfigurationExtensions.cs#L10
 
+                if (options.OptionsConfigurer != null)
+                    c = c.Options(options.OptionsConfigurer);
+                
                 if (options.LoggingConfigurer != null)
                     c = c.Logging(options.LoggingConfigurer);
 

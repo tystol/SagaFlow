@@ -1,5 +1,6 @@
 using Rebus.Config;
 using Rebus.Persistence.InMem;
+using Rebus.Retry.Simple;
 using Rebus.Routing.TypeBased;
 using Rebus.Sagas;
 using Rebus.Subscriptions;
@@ -69,6 +70,7 @@ builder.Services.AddSagaFlow(o => o
     .AddResourceProvidersFromAssemblyOf<SampleTenantProvider>()
     .AddHandlersFromAssemblyOf<SimpleTaskHandler>()
     .AddCommandsOfType<ICommand>()
+    .WithOptions(o => o.RetryStrategy(maxDeliveryAttempts: 1)) // Set the number of allow retries, here we set to only try one attempt we will report the error back to the user via SignalR.
     //.AddCommandFromEvent<StartSimpleTaskRequested>()
     .WithLogging(l => l.Console())
     .WithTransport(ConfigureRebusTransport)
