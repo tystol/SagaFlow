@@ -16,6 +16,7 @@ namespace SagaFlow
 {
     public class SagaFlowOptions
     {
+        internal Action<OptionsConfigurer> OptionsConfigurer { get; private set; }
         internal Action<RebusLoggingConfigurer> LoggingConfigurer { get; private set; }
         internal Action<StandardConfigurer<ITransport>> TransportConfigurer { get; private set; }
         internal Action<StandardConfigurer<IRouter>> RoutingConfigurer { get; private set; }
@@ -30,6 +31,13 @@ namespace SagaFlow
         internal List<Func<IEnumerable<Type>>> CommandTypes { get; } = new List<Func<IEnumerable<Type>>>();
 
         internal IDictionary<string, object> SetupContext = new Dictionary<string, object>();
+
+        public SagaFlowOptions WithOptions(Action<OptionsConfigurer> configurer)
+        {
+            OptionsConfigurer = configurer;
+
+            return this;
+        }
 
         public SagaFlowOptions WithLogging(Action<RebusLoggingConfigurer> configurer)
         {
