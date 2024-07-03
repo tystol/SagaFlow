@@ -148,6 +148,7 @@
           width: var(--sf-command-status-search-width, auto);
           border: var(--sf-command-status-search-border, revert);
           border-radius: var(--sf-command-status-search-border-radius, unset);
+          margin: var(--sf-command-status-search-margin, initial);
         }
       }
 
