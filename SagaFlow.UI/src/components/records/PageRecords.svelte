@@ -22,6 +22,7 @@
     import RecordsList from "@/components/records/RecordsList.svelte";
     import RecordsCount from "./RecordsCount.svelte";
     import sagaFlow, {defaultSagaFlowServer} from "../../state/SagaFlowState";
+    import CommandStatusPreviewPanel from "./CommandStatusPreviewPanel.svelte";
 
     const resourceListType = 'resources';
     const commandListType = 'commands';
@@ -33,6 +34,7 @@
     let collectionDocsPanel;
     let recordUpsertPanel;
     let recordPreviewPanel;
+    let commandStatusPreviewPanel;
     let recordsList;
     let recordsCount;
     let filter = initialQueryParams.get("filter") || "";
@@ -77,9 +79,19 @@
     async function showRecordById(recordId) {
         await tick(); // ensure that the reactive component params are resolved
 
-        $activeCollection?.type === "view"
-            ? recordPreviewPanel.show(recordId)
-            : recordUpsertPanel?.show(recordId);
+        showRecord(recordId);
+    }
+
+    function showRecord(recordModelOrId){
+        if ($activeCollection.type === "view" || $activeCollection.type === "resources"){
+            recordPreviewPanel?.show(recordModelOrId);
+        }
+        else if($activeCollection.type === "commands"){
+            commandStatusPreviewPanel?.show(recordModelOrId);
+        }
+        else {
+            recordUpsertPanel?.show(recordModelOrId);
+        }
     }
 
     function reset() {
@@ -234,9 +246,7 @@
 
                 let showModel = e.detail._partial ? e.detail.id : e.detail;
 
-                $activeCollection.type === "view"
-                    ? recordPreviewPanel?.show(showModel)
-                    : recordUpsertPanel?.show(showModel);
+                showRecord(showModel);
             }}
             on:delete={() => {
                 recordsCount?.reload();
@@ -289,6 +299,14 @@
 
 <RecordPreviewPanel
     bind:this={recordPreviewPanel}
+    collection={$activeCollection}
+    on:hide={() => {
+        updateQueryParams({ recordId: null });
+    }}
+/>
+
+<CommandStatusPreviewPanel
+    bind:this={commandStatusPreviewPanel}
     collection={$activeCollection}
     on:hide={() => {
         updateQueryParams({ recordId: null });

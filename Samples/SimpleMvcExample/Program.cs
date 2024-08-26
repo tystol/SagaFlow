@@ -1,9 +1,12 @@
+using Rebus.Bus;
 using Rebus.Config;
+using Rebus.Handlers;
 using Rebus.Persistence.InMem;
 using Rebus.Retry.Simple;
 using Rebus.Routing.TypeBased;
 using Rebus.Sagas;
 using Rebus.Subscriptions;
+using Rebus.Timeouts;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
 using SagaFlow.SignalR;
@@ -16,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<SimpleTaskHandler>();
+builder.Services.AddScoped<RequestHandler>();
 builder.Services.AddScoped<PeriodicJobHandler>();
 builder.Services.AddScoped<PeriodicAlternativeJobHandler>();
 builder.Services.AddScoped<SendMessageToTenant>();
@@ -27,7 +31,8 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new StronglyTypedIdJsonConverterFactory());
     });
 
-const string inputQueueName = "sagaflow.sampleapp";
+const string inputQueueName = "sagaflow.commands";
+const string backgroundJobsQueueName = "sagaflow.jobs";
 
 var dbProvider = builder.Configuration.GetValue<string>("Database:Provider");
 var db = builder.Configuration.GetValue<string>("Database:ConnectionString");
@@ -40,6 +45,15 @@ void ConfigureRebusTransport(StandardConfigurer<ITransport> t)
         t.UsePostgreSql(db, "messages", inputQueueName);
     else
         t.UseInMemoryTransport(new InMemNetwork(),inputQueueName);
+}
+void ConfigureRebusTimeoutStorage(StandardConfigurer<ITimeoutManager> s)
+{
+    if (dbProvider == "sqlserver")
+        s.StoreInSqlServer(db, "Timeouts");
+    else if (dbProvider == "postgres")
+        s.StoreInPostgres(db, "timeouts");
+    else
+        s.StoreInMemory();
 }
 void ConfigureRebusSubscriptions(StandardConfigurer<ISubscriptionStorage> s)
 {
@@ -70,13 +84,17 @@ builder.Services.AddSagaFlow(o => o
     .AddResourceProvidersFromAssemblyOf<SampleTenantProvider>()
     .AddHandlersFromAssemblyOf<SimpleTaskHandler>()
     .AddCommandsOfType<ICommand>()
-    .WithOptions(o => o.RetryStrategy(maxDeliveryAttempts: 1)) // Set the number of allow retries, here we set to only try one attempt we will report the error back to the user via SignalR.
+    .WithOptions(o => o.RetryStrategy(maxDeliveryAttempts: 3))
     //.AddCommandFromEvent<StartSimpleTaskRequested>()
     .WithLogging(l => l.Console())
     .WithTransport(ConfigureRebusTransport)
+    .WithTimeoutStorage(ConfigureRebusTimeoutStorage)
     .WithSubscriptionStorage(ConfigureRebusSubscriptions)
     .WithSagaStorage(ConfigureRebusSagaStorage)
-    .WithRouting(r => r.TypeBased().MapAssemblyOf<ICommand>(inputQueueName))
+    .WithRouting(r => r.TypeBased()
+        .MapAssemblyDerivedFrom<ICommand>(inputQueueName)
+        .Map<Request>(inputQueueName)//backgroundJobsQueueName)
+        .Map<Reply>(inputQueueName))//backgroundJobsQueueName))
     .WithSignalR()
     .WithSystemUsername("System")
     .WithAnonymousUsername("Anonymous")
@@ -92,14 +110,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-}
-else
-{
-    app.UseCors(p => p
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-    );
 }
 
 app.UseHttpsRedirection();
@@ -117,3 +127,70 @@ app.UseSagaFlow();
 
 app.Run();
 
+Console.WriteLine("Server shutdown complete.");
+
+public class TestSagaData : SagaData
+{
+    public string CaseNumber { get; set; }
+    public int MessagesReceived { get; set; }
+}
+
+public class TestSaga : Saga<TestSagaData>, IAmInitiatedBy<StartSimpleTask>, IHandleMessages<Reply>
+{
+    private readonly IBus bus;
+
+    public TestSaga(IBus bus)
+    {
+        // TODO: Need to inject a separate worker/saga bus for handling and sending saga messages, outside
+        // the scope of the sagaflow bus that should only be used to receive API messages and send them
+        // as sagaflow messages.
+        // OR - only do sagaflow metadata addition when sending messages from API controller.
+        this.bus = bus;
+    }
+    protected override void CorrelateMessages(ICorrelationConfig<TestSagaData> config)
+    {
+        config.Correlate<StartSimpleTask>(m => m.Message, d => d.CaseNumber);
+        config.Correlate<Reply>(m => m.CaseNumber, d => d.CaseNumber);
+    }
+
+    public async Task Handle(StartSimpleTask message)
+    {
+        Data.MessagesReceived++;
+        
+        Console.WriteLine($"{Data.MessagesReceived} messages received to case {Data.CaseNumber}.");
+        await bus.Send(new Request{CaseNumber = Data.CaseNumber});
+        
+        if (!CompleteIfNeeded())
+            await Task.Delay(500);
+    }
+
+    public async Task Handle(Reply message)
+    {
+        Data.MessagesReceived++;
+        Console.WriteLine($"{Data.MessagesReceived} messages received to case {Data.CaseNumber}.");
+        
+        if (!CompleteIfNeeded())
+            await bus.Defer(TimeSpan.FromMilliseconds(500), new Request {CaseNumber = Data.CaseNumber});
+    }
+
+    private bool CompleteIfNeeded()
+    {
+        if (Data.MessagesReceived >= 10)
+        {
+            MarkAsComplete();
+            return true;
+        }
+
+        return false;
+    }
+}
+
+public record Request
+{
+    public string CaseNumber { get; set; }
+}
+
+public record Reply
+{
+    public string CaseNumber { get; set; }
+}

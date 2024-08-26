@@ -20,8 +20,9 @@ public static class SagaFlowCommandStatusJsonSerializerOptions
         Converters =
         {
             new JsonStringEnumConverter(),
-            new SagaFlowCommandIdJsonConverter()
+            new SagaFlowIdJsonConverterFactory(),
         },
+        
         // need to specify default for net8 issue: https://github.com/dotnet/aspnetcore/issues/55692
         TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         

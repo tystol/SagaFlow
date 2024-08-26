@@ -9,8 +9,9 @@
     
     <!-- allows rebuild when there are changes to SagaFlow.UI changes -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-    <TargetFrameworks>net8.0;net6.0;net7.0</TargetFrameworks>
     <PackageId>SagaFlow</PackageId>
+    <Nullable>enable</Nullable>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,6 +49,10 @@
     <ProjectReference Include="..\SagaFlow.UI\SagaFlow.UI.esproj">
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Utilities\" />
   </ItemGroup>
 
   <Target Name="BuildSagaFlowUI" AfterTargets="ResolveProjectReferences" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">

@@ -1,6 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc;
-using Rebus.Bus;
 using SagaFlow.AspNetCore.Formatters;
 using SagaFlow.History;
 
@@ -12,22 +11,20 @@ namespace SagaFlow.MvcProvider
     [Route("[sagaflow-base-path]/commands/[command-type]")]
     public class CommandController<T> : ControllerBase where T : class, new()
     {
-        private readonly SagaFlowModule module;
-        private readonly ISagaFlowCommandStore sagaFlowCommandStore;
-        private readonly IBus bus;
+        private readonly ISagaFlowActivityStore activityStore;
+        private readonly ISagaFlowCommandBus commandBus;
 
-        public CommandController(SagaFlowModule module, ISagaFlowCommandStore sagaFlowCommandStore, IBus bus)
+        public CommandController(ISagaFlowActivityStore activityStore, ISagaFlowCommandBus commandBus)
         {
-            this.module = module;
-            this.sagaFlowCommandStore = sagaFlowCommandStore;
-            this.bus = bus;
+            this.activityStore = activityStore;
+            this.commandBus = commandBus;
         }
 
         [HttpGet]
         [SagaFlowCommandJsonSerializer]
         public async Task<PaginatedResult<CommandHistory<T>>> Get(int page = 1, int pageSize = 50)
         {
-            var history = await sagaFlowCommandStore.GetCommandHistory<T>(page - 1, pageSize);
+            var history = await activityStore.GetCommandHistory<T>(page - 1, pageSize);
             return new PaginatedResult<CommandHistory<T>>
             {
                 Items = history.Page.Select(c => new CommandHistory<T>
@@ -37,9 +34,7 @@ namespace SagaFlow.MvcProvider
                     Name = c.Name,
                     CommandName = c.CommandName,
                     CommandType = c.CommandType,
-                    CommandArgs = c.CommandArgs,
-                    Command = (T) c.Command, // TODO - send command snapshot
-                    HumanReadableCommandPropertyValues = c.HumanReadableCommandPropertyValues,
+                    Command = (T) c.Command,
                     InitiatingUser = c.InitiatingUser,
                     StartDateTime = c.StartDateTime,
                     FinishDateTime = c.FinishDateTime,
@@ -47,6 +42,8 @@ namespace SagaFlow.MvcProvider
                     Progress = c.Progress,
                     LastError = c.LastError,
                     StackTrace = c.StackTrace,
+                    Handlers = c.Handlers,
+                    RelatedSagas = c.RelatedSagas,
                 }),
                 Page = page,
                 PageSize = pageSize,
@@ -57,20 +54,18 @@ namespace SagaFlow.MvcProvider
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] T value)
+        public async Task<IActionResult> Post([FromBody] T command)
         {
-            // TODO: Offer config over whether to send commands as a direct message? or always publish as event?
-            // await bus.Publish(value);
-            await bus.Send(value);
+            await commandBus.Send(command);
             return Ok();
         }
     }
 
-    public class CommandHistory<T>
+    public record CommandHistory<T>
     {
         public SagaFlowCommandId Id { get; init; }
 
-        public CommandStatus Status { get; set; } = CommandStatus.Started;
+        public CommandStatus Status { get; init; } = CommandStatus.Sent;
     
         public string Name { get; init; }
     
@@ -78,12 +73,9 @@ namespace SagaFlow.MvcProvider
     
         public string CommandType { get; init; }
     
-        public string CommandArgs { get; init; }
         public T Command { get; init; }
     
-        public ReadOnlyDictionary<string, string> HumanReadableCommandPropertyValues { get; init; }
-    
-        public string InitiatingUser { get; init; }
+        public string? InitiatingUser { get; init; }
     
         public DateTime StartDateTime { get; init; }
     
@@ -93,7 +85,9 @@ namespace SagaFlow.MvcProvider
     
         public double Progress { get; set; }
 
-        public string LastError { get; set; } = null;
-        public string StackTrace { get; set; } = null;
+        public string? LastError { get; set; } = null;
+        public string? StackTrace { get; set; } = null;
+        public List<CommandHandlerStatusSummary> Handlers { get; set; }
+        public List<SagaStatusSummary> RelatedSagas { get; set; }
     }
 }

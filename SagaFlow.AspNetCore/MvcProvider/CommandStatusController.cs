@@ -9,17 +9,16 @@ namespace SagaFlow.MvcProvider;
 [SagaFlowCommandJsonSerializer]
 public class CommandStatusController : ControllerBase
 {
-    private readonly ISagaFlowCommandStore _sagaFlowCommandStore;
+    private readonly ISagaFlowActivityStore activityStore;
 
-    public CommandStatusController(
-        ISagaFlowCommandStore sagaFlowCommandStore)
+    public CommandStatusController(ISagaFlowActivityStore activityStore)
     {
-        _sagaFlowCommandStore = sagaFlowCommandStore;
+        this.activityStore = activityStore;
     }
     
     [HttpGet]
-    public async Task<PagedResult<SagaFlowCommandStatus>> Get(int pageIndex = 0, int pageSize = 20, string? keyword = null)
+    public Task<PagedResult<SagaFlowCommandStatus>> Get(int pageIndex = 0, int pageSize = 20, string? keyword = null)
     {
-        return await _sagaFlowCommandStore.GetCommands(pageIndex, pageSize, keyword);
+        throw new NotImplementedException();
     }
 }

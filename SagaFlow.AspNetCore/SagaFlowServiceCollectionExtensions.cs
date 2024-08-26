@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Rebus.Pipeline;
 using SagaFlow;
 using SagaFlow.AspNetCore.Authentications;
+using SagaFlow.AspNetCore.Rebus;
 using SagaFlow.Authentications;
 using SagaFlow.MvcProvider;
-using SagaFlow.Utilities;
 
 
 // ReSharper disable once CheckNamespace
@@ -29,14 +31,14 @@ public static class SagaFlowServiceCollectionExtensions
         {
             var httpContextUsernameProvider = ActivatorUtilities.CreateInstance<HttpContextUsernameProvider>(s);
             
-            if (options.SetupContext.TryGetContextValue<string>(nameof(HttpContextUsernameProvider.SystemUsername), out var systemUserName))
+            if (options.SetupContext.TryGetValue(nameof(HttpContextUsernameProvider.SystemUsername), out var systemUserName))
             {
-                httpContextUsernameProvider.SystemUsername = systemUserName;
+                httpContextUsernameProvider.SystemUsername = systemUserName as string;
             }
             
-            if (options.SetupContext.TryGetContextValue<string>(nameof(HttpContextUsernameProvider.AnonymousUserName), out var anonymousUserName))
+            if (options.SetupContext.TryGetValue(nameof(HttpContextUsernameProvider.AnonymousUserName), out var anonymousUserName))
             {
-                httpContextUsernameProvider.AnonymousUserName = anonymousUserName;
+                httpContextUsernameProvider.AnonymousUserName = anonymousUserName as string;
             }
 
             return httpContextUsernameProvider;
@@ -44,7 +46,12 @@ public static class SagaFlowServiceCollectionExtensions
         
         var sagaFlowModule = SagaFlowModuleFactory.Create(options, apiBasePath);
 
-        services.AddSagaFlowCore(options, sagaFlowModule);
+        services.AddSagaFlowCore(options, sagaFlowModule, i =>
+        {
+            var httpAccessor = sagaFlowModule.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+            return i.OnSend(new PerHttpRequestScopeInjector(httpAccessor), PipelineRelativePosition.Before,
+                typeof(Rebus.Pipeline.Send.AssignDefaultHeadersStep));
+        });
         
         services.Configure<MvcOptions>(o => o.Conventions.Add(new MvcEndpointRouteConvention(sagaFlowModule)));
         var manager = GetServiceFromCollection<ApplicationPartManager>(services);

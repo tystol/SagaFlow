@@ -9,6 +9,7 @@ namespace SagaFlow.Schema;
 /// </summary>
 public interface IHumanReadableCommandNameResolver
 {
+    bool IsCommand(object message);
     string ResolveCommandName(object command);
 }
 
@@ -16,20 +17,21 @@ internal class HumanReadableCommandNameResolver : IHumanReadableCommandNameResol
 {
     private readonly IHumanReadableCommandPropertiesResolver _propertiesResolver;
     private readonly SagaFlowModule _sagaFlowModule;
-    private readonly IServiceProvider _serviceProvider;
 
     private static readonly Regex TemplateRegex = new Regex("[^{}]*{([^{}]+)}[^{}]*");
 
-    public HumanReadableCommandNameResolver(
-        IHumanReadableCommandPropertiesResolver propertiesResolver,
-        SagaFlowModule sagaFlowModule,
-        IServiceProvider serviceProvider)
+    public HumanReadableCommandNameResolver(IHumanReadableCommandPropertiesResolver propertiesResolver, SagaFlowModule sagaFlowModule)
     {
         _propertiesResolver = propertiesResolver;
         _sagaFlowModule = sagaFlowModule;
-        _serviceProvider = serviceProvider;
     }
-    
+
+    public bool IsCommand(object message)
+    {
+        var commandType = message.GetType();
+        return _sagaFlowModule.Commands.Any(c => c.CommandType == commandType);
+    }
+
     public string ResolveCommandName(object command)
     {
         var commandType = command.GetType();

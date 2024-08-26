@@ -16,7 +16,7 @@ namespace SagaFlow
             return type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
         }
         
-        public static Type GetEnumerableInnerType(this Type type)
+        public static Type? GetEnumerableInnerType(this Type type)
         {
             return type.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>))

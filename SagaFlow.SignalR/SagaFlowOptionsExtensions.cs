@@ -12,16 +12,14 @@ public static class SagaFlowOptionsExtensions
 {
     public static SagaFlowOptions WithSignalR(this SagaFlowOptions options)
     {
-        options
-            .AddService(services =>
-                services
-                    .AddTransient<ISagaFlowCommandStateChangedHandler, PublishSagaFlowCommandStateChangeToSignalRHub>()
-                    .AddTransient<ISagaFlowCommandErroredHandler, PublishSagaFlowCommandStateChangeToSignalRHub>()
-                    .AddTransient<ISagaFlowCommandSucceededHandler, PublishSagaFlowCommandStateChangeToSignalRHub>())
+        // TODO: better way to extend services within SagaFlow extensions.
+        options.AddService(services =>
+            services
+                .AddTransient<ISagaFlowEventHandler, PublishSagaFlowEventsToSignalRHub>()
+                .AddSignalR()
+                    .AddJsonProtocol(jsonHubProtocolOptions => jsonHubProtocolOptions.PayloadSerializerOptions =
+                    SagaFlowCommandStatusJsonSerializerOptions.JsonSerializerOptions));
             
-            .AddService(services =>
-                services.AddSignalR()
-                    .AddJsonProtocol(jsonHubProtocolOptions => jsonHubProtocolOptions.PayloadSerializerOptions = SagaFlowCommandStatusJsonSerializerOptions.JsonSerializerOptions));
 
         options.AddHostSetup(
             host =>

@@ -4,7 +4,7 @@ namespace SagaFlow.Authentications;
 
 public interface IUsernameProvider
 {
-    string CurrentUsername { get; }
+    string? CurrentUsername { get; }
 }
 
 /// <summary>
@@ -13,5 +13,5 @@ public interface IUsernameProvider
 /// </summary>
 internal class StubUsernameProvider : IUsernameProvider
 {
-    public string CurrentUsername => ClaimsPrincipal.Current?.Identity?.Name ?? "System";
+    public string? CurrentUsername => ClaimsPrincipal.Current?.Identity?.Name ?? "System";
 }

@@ -48,15 +48,7 @@ namespace SagaFlow.MvcProvider
                 resourceDefinition.ListingRouteTemplate = routeTemplate;
             }
 
-            if (controller.ControllerType == typeof(SchemaController))
-            {
-                var (routeSelector, routeTemplate) = GetRoute(controller);
-                routeTemplate = routeTemplate.Replace("[sagaflow-base-path]", module.ApiBasePath);
-
-                routeSelector.AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routeTemplate));
-            }
-            
-            if (controller.ControllerType == typeof(CommandStatusController))
+            if (new[]{typeof(SchemaController), typeof(CommandStatusController), typeof(SagaStatusController)}.Contains(controller.ControllerType))
             {
                 var (routeSelector, routeTemplate) = GetRoute(controller);
                 routeTemplate = routeTemplate.Replace("[sagaflow-base-path]", module.ApiBasePath);
@@ -67,11 +59,11 @@ namespace SagaFlow.MvcProvider
 
         private static (SelectorModel routeSelector, string routeTemplate) GetRoute(ControllerModel controller)
         {
-            var routeSelector = controller.Selectors
-                    .Where(s => s.AttributeRouteModel != null)
-                    .FirstOrDefault();
+            var routeSelector = controller.Selectors.FirstOrDefault(s => s.AttributeRouteModel != null);
+            if (routeSelector?.AttributeRouteModel?.Template == null)
+                throw new ArgumentException("The specified controller does not contain a [Route] attribute with a template path.");
+            
             var routeTemplate = routeSelector.AttributeRouteModel.Template;
-
             return (routeSelector, routeTemplate);
         }
     }
