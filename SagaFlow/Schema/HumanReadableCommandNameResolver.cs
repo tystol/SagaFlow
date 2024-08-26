@@ -9,6 +9,7 @@ namespace SagaFlow.Schema;
 /// </summary>
 public interface IHumanReadableCommandNameResolver
 {
+    bool IsCommand(object message);
     string ResolveCommandName(object command);
 }
 
@@ -29,7 +30,13 @@ internal class HumanReadableCommandNameResolver : IHumanReadableCommandNameResol
         _sagaFlowModule = sagaFlowModule;
         _serviceProvider = serviceProvider;
     }
-    
+
+    public bool IsCommand(object message)
+    {
+        var commandType = message.GetType();
+        return _sagaFlowModule.Commands.Any(c => c.CommandType == commandType);
+    }
+
     public string ResolveCommandName(object command)
     {
         var commandType = command.GetType();

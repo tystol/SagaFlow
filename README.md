@@ -1,7 +1,9 @@
 # SagaFlow
-A framework to quickly scaffold an application based on a declarative message DTO format.
-Define your messages (commands and/or events) as POCO DTOs, and have a fully functional UI and underlying queue/workflow engine automatically built to handle the messages.
-You write message classes, plus your business logic within handlers and/or sagas - everything else is generated at runtime.
+An opinionated framework to quickly scaffold an application based on a declarative message DTO format.
+Define your messages (commands and/or events) as POCO DTOs, and have a fully functional UI and underlying
+queue/workflow engine automatically built to handle the messages.
+You write message contracts and your business logic within handlers and/or sagas - everything else is generated
+at runtime.
 
 ## Message-based Design
 The design has been inspired by [ServiceStack](https://servicestack.net/).
@@ -11,9 +13,16 @@ Rather than repeat the benefits of a message based design here, please read up o
 - [Advantages of message-based web services](https://docs.servicestack.net/advantages-of-message-based-web-services)
 
 ## Getting Started
-SagaFlow heavily relies on [Rebus](https://github.com/rebus-org/Rebus) under the covers to facilate the messaging and saga/workflow engine. It is worth familiarizing yourself with Rebus and service buses in general.
+SagaFlow heavily relies on [Rebus](https://github.com/rebus-org/Rebus) under the covers to facilitate the messaging
+and saga/workflow engine. It is worth familiarizing yourself with Rebus and service buses in general before
+getting started if not already familiar. Specifically:
+- [Rebus Introduction](https://github.com/rebus-org/Rebus/wiki/Introduction)
+- [Handing off work](https://github.com/rebus-org/Rebus/wiki/Handing-off-work)
+- [Coordinating stuff that happens over time](https://github.com/rebus-org/Rebus/wiki/Coordinating-stuff-that-happens-over-time)
 
-### Define your messages
+To use the SagaFlow framework:
+
+### Define your message contracts
 For example, a command to add a new tenant to your infrastructure:
 ```C#
 public record AddTenantCommand
