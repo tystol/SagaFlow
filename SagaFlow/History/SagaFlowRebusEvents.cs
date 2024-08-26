@@ -37,9 +37,10 @@ public static class SagaFlowRebusEvents
             headers.TryAdd(SagaFlowCommandStartDate, DateTime.UtcNow.ToString("o"));
 
             headers.TryAdd(SagaFlowInitiatingUsername, usernameProvider.CurrentUsername);
-            headers.TryAdd(SagaFlowCommandName, commandNameResolver.ResolveCommandName(command));
-            
-           
+            if (commandNameResolver.IsCommand(command))
+            {
+                headers.TryAdd(SagaFlowCommandName, commandNameResolver.ResolveCommandName(command));
+            }
 
             if (!headers.TryAdd(SagaFlowCommandAttemptCounter, "1"))
             {

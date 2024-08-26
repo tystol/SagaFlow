@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using SagaFlow;
 
 namespace SimpleMvcExample.ResourceProviders
@@ -10,7 +10,8 @@ namespace SimpleMvcExample.ResourceProviders
                 {
                     Id = Guid.NewGuid(),
                     Name = "Tenant " + (t + 1),
-                    Description = "Lorem Ipsum..."
+                    Description = "Lorem Ipsum...",
+                    LastLoginTime = DateTime.Now.AddSeconds(-1*Random.Shared.Next(0,36000)),
                 })
                 .ToList();
 
@@ -35,5 +36,6 @@ namespace SimpleMvcExample.ResourceProviders
         public Guid Id { get; init; }
         public string Name { get; init; }
         public string Description { get; init; }
+        public DateTime LastLoginTime { get; set; }
     }
 }

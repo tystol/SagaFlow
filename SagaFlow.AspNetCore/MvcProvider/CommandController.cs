@@ -1,6 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
+using Rebus.Messages;
 using SagaFlow.AspNetCore.Formatters;
 using SagaFlow.History;
 
@@ -59,9 +60,11 @@ namespace SagaFlow.MvcProvider
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] T value)
         {
-            // TODO: Offer config over whether to send commands as a direct message? or always publish as event?
+            var commandId = Guid.NewGuid();
+            var headers = new Dictionary<string, string> {{Headers.CorrelationId, Guid.NewGuid().ToString()}};
+            await bus.Send(value, headers);
+            // TODO: Offer config over whether to send commands as a direct message or publish as event?
             // await bus.Publish(value);
-            await bus.Send(value);
             return Ok();
         }
     }
