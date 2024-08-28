@@ -1,14 +1,14 @@
 <script>
     import { tick } from "svelte";
     import { querystring } from "svelte-spa-router";
-    import CommonHelper from "@/utils/CommonHelper";
+    import CommonHelper from "../../utils/CommonHelper";
     import {
         collections,
         activeCollection,
         isCollectionsLoading,
         loadCollections,
         changeActiveCollectionById,
-    } from "@/stores/collections";
+    } from "../../stores/collections";
     import tooltip from "@/actions/tooltip";
     import { pageTitle, hideControls } from "@/stores/app";
     import PageWrapper from "@/components/base/PageWrapper.svelte";
@@ -21,6 +21,7 @@
     import RecordPreviewPanel from "@/components/records/RecordPreviewPanel.svelte";
     import RecordsList from "@/components/records/RecordsList.svelte";
     import RecordsCount from "@/components/records/RecordsCount.svelte";
+    import sagaFlow, {defaultSagaFlowServer} from "../../state/SagaFlowState";
 
     const initialQueryParams = new URLSearchParams($querystring);
 
@@ -35,7 +36,11 @@
     let selectedCollectionId = initialQueryParams.get("collectionId") || $activeCollection?.id;
     let totalCount = 0; // used to manully change the count without the need of reloading the recordsCount component
 
-    loadCollections(selectedCollectionId);
+    let sagaflowState = sagaFlow.state(defaultSagaFlowServer);
+
+    $: if (!CommonHelper.isEmpty($sagaflowState.config.resourceLists)){
+        loadCollections(selectedCollectionId);
+    }
 
     $: reactiveParams = new URLSearchParams($querystring);
 

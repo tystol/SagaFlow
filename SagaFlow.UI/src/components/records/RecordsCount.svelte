@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import ApiClient from "@/utils/ApiClient";
+    import ApiClient from "../../utils/ApiClient";
     import CommonHelper from "@/utils/CommonHelper";
 
     const dispatch = createEventDispatcher();
@@ -29,7 +29,7 @@
         try {
             const fallbackSearchFields = CommonHelper.getAllCollectionIdentifiers(collection);
 
-            const result = await ApiClient.collection(collection.id).getList(1, 1, {
+            const result = await ApiClient.resourceList(collection.id).getList(1, 1, {
                 filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
                 fields: "id",
                 requestKey: "records_count",

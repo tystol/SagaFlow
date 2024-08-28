@@ -1,7 +1,7 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import { fly } from "svelte/transition";
-    import ApiClient from "@/utils/ApiClient";
+    import ApiClient from "../../utils/ApiClient";
     import CommonHelper from "@/utils/CommonHelper";
     import tooltip from "@/actions/tooltip";
     import { confirm } from "@/stores/confirmation";
@@ -163,7 +163,7 @@
             listFields.unshift("*");
         }
 
-        return ApiClient.collection(collection.id)
+        return ApiClient.resourceList(collection.id)
             .getList(page, perPage, {
                 sort: listSort,
                 skipTotal: 1,

@@ -1,6 +1,7 @@
 import { writable, get } from "svelte/store";
 import ApiClient    from "../utils/ApiClient";
 import CommonHelper from "../utils/CommonHelper";
+import sagaFlow, {defaultSagaFlowServer} from "../state/SagaFlowState";
 
 export const collections                    = writable([]);
 export const activeCollection               = writable({});
@@ -76,11 +77,17 @@ export async function loadCollections(activeId = null) {
     isCollectionsLoading.set(true);
 
     try {
-        let items = await ApiClient.collections.getFullList(200, {
+        /*let items = await ApiClient.collections.getFullList(200, {
             "sort": "+name",
         })
 
         items = CommonHelper.sortCollections(items);
+        */
+        
+        let state = get(sagaFlow.state(defaultSagaFlowServer));
+        let resourceListArray = Object.entries(state.config.resourceLists).map(([id, resourceList]) => ({id, ...resourceList}));
+        let items = resourceListArray;
+
         collections.set(items);
 
         const item = activeId && CommonHelper.findByKey(items, "id", activeId);

@@ -28,7 +28,7 @@ export interface ISagaFlowServerState {
 // builder.Services.AddSagaFlow(
 //    options => {},
 //    apiBasePath: "my-custom-route" )  
-const sagaFlowDefaultRoute: string = "__default_saga_flow_route_placeholder__";
+const sagaFlowDefaultRoute: string = import.meta.env.DEV ? "sagaflow" : "__default_saga_flow_route_placeholder__";
 
 const initialState: ISagaFlowServerState = {
     setup: {
@@ -134,7 +134,7 @@ class SagaFlow
         
         if (!resource) throw Error(`Resource ${resourceId} does not exist`);
 
-        if (resourceCache[resourceId]) return resourceCache[resourceId];
+        //if (resourceCache[resourceId]) return resourceCache[resourceId];
 
         const response = await fetch(`${setup.baseUrl}/${resource.href}`);
 
@@ -143,6 +143,7 @@ class SagaFlow
         if (response.ok) {
             const data: Resource[] = await response.json();
 
+            /*
             store.update(s => ({
                 ...s,
                 resourceCache: {
@@ -150,6 +151,7 @@ class SagaFlow
                     [resourceId]: data
                 }
             }))
+            */
 
             return data;
         }
@@ -276,7 +278,6 @@ class SagaFlow
 }
 
 const sagaFlow: SagaFlow = new SagaFlow();
-sagaFlow.initialize();
 
 declare global {
     interface Window { SagaFlow: SagaFlow }
