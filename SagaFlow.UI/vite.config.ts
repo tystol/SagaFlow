@@ -7,8 +7,13 @@ import path from "path";
 const config: UserConfig = {
   resolve: {
     alias: {
-      $lib: path.resolve("./src/lib")
+      $lib: path.resolve("./src/lib"),
+      $assets: path.resolve("./src/assets"),
+      '@': __dirname + '/src',
     }
+  },
+  build: {
+    assetsInlineLimit: 200000 //200 KiB - force fonts inline.
   },
   plugins: [svelte(), viteSingleFile()],
   server: {
