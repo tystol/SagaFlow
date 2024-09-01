@@ -13,7 +13,7 @@ const config: UserConfig = {
     }
   },
   build: {
-    assetsInlineLimit: 200000 //200 KiB - force fonts inline.
+    assetsInlineLimit: Number.MAX_SAFE_INTEGER // force all assets (fonts, SVGs, etc) inline.
   },
   plugins: [svelte(), viteSingleFile()],
   server: {

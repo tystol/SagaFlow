@@ -24,6 +24,8 @@
       createWebComponentEventDispatcher,
       extendToGetWebComponentRoot
   } from "$lib/RootWebComponentEventDispatcher";
+  import logo from "$assets/logo.svg?raw";
+  const logoEncoded = `data:image/svg+xml,${encodeURIComponent(logo)}`;
   
   export let __webComponentElement: HTMLElement | undefined = undefined;
   
@@ -84,13 +86,13 @@
     {#if showAppSidebar}
         <aside class="app-sidebar">
             <a href="/" class="logo logo-sm" use:link use:tooltip={{ text: "SagaFlow", position: "right" }}>
-                <i class="ri-flow-chart" style="font-size: 3rem;"/>
-                <!--<img
-                    src="{import.meta.env.BASE_URL}images/logo.svg"
+                <!-- <i class="ri-flow-chart" style="font-size: 3rem;"/> -->
+                <img
+                    src={logoEncoded}
                     alt="SagaFlow logo"
                     width="40"
                     height="40"
-                />-->
+                />
             </a>
 
             <nav class="main-menu">
