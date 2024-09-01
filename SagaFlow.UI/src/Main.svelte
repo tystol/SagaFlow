@@ -4,6 +4,8 @@
     extend: extendToGetWebComponentRoot
 }}/>
 <script lang="ts">
+
+    import 'remixicon/fonts/remixicon.css'
     import "./scss/main.scss";
 
   import Router, { replace, link } from "svelte-spa-router";
@@ -105,6 +107,16 @@
                     use:tooltip={{ text: "Collections", position: "right" }}
                 >
                     <i class="ri-database-2-line" />
+                </a>
+                <a
+                    href="/commands"
+                    class="menu-item"
+                    aria-label="Commands"
+                    use:link
+                    use:active={{ path: "/commands/?.*", className: "current-route" }}
+                    use:tooltip={{ text: "Commands", position: "right" }}
+                >
+                    <i class="ri-function-add-line" />
                 </a>
                 <a
                     href="/logs"
