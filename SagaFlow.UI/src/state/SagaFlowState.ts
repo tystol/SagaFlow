@@ -1,6 +1,7 @@
 import type {
     Config,
     PagedResultCommandStatus,
+    PaginatedResult,
     Resource,
     Setup
 } from "$lib/Models";
@@ -126,8 +127,8 @@ class SagaFlow
     }
     
     // Returns a list of available resources for the provided resource id.
-    public async getResources(resourceId: string, serverKey: string = defaultSagaFlowServer): Promise<Resource[]> {
-        const store = this.getServerStore(serverKey)
+    public async getResources(resourceId: string, page?: number, pageSize?: number): Promise<PaginatedResult> {
+        const store = this.getServerStore(defaultSagaFlowServer)
         const { setup, config, resourceCache } = get(store);
 
         const resource = config.resourceLists[resourceId];
@@ -136,14 +137,23 @@ class SagaFlow
 
         //if (resourceCache[resourceId]) return resourceCache[resourceId];
 
-        const response = await fetch(`${setup.baseUrl}/${resource.href}`);
+        const usingPagination = page != undefined && pageSize != undefined;
+        const pageQuery = usingPagination ? `?page=${page}&pagesize=${pageSize}` : "";
+        const response = await fetch(`${setup.baseUrl}/${resource.href}${pageQuery}`);
 
         if (!response.ok) throw Error(`Unable to fetch list of ${resourceId}`)
 
         if (response.ok) {
-            const data: Resource[] = await response.json();
+            const result: PaginatedResult = await response.json();
 
+            if (!usingPagination){
+                result.page = 1;
+                result.pageSize = result.items.length;
+                result.totalItems = result.items.length;
+                result.totalPages = 1;
+            }
             /*
+
             store.update(s => ({
                 ...s,
                 resourceCache: {
@@ -153,7 +163,7 @@ class SagaFlow
             }))
             */
 
-            return data;
+            return result;
         }
     }
     

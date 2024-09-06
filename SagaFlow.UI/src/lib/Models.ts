@@ -10,6 +10,15 @@ export interface Resource {
     name: string;
 };
 
+export interface PaginatedResult {
+
+    items: Resource[];
+    page: number;
+    pageSize: number;
+    totalItems?: number;
+    totalPages?: number;
+}
+
 export interface ResourceList {
     name: string;
     href: string;

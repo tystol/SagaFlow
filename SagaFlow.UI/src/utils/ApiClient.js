@@ -14,16 +14,8 @@ class ResourceListService {
         this.id = id;
     }
 
-    getList(){
-        return sagaFlow.getResources(this.id).then(resources =>{
-            return {
-                page: 1,
-                perPage: 1000,
-                totalItems: resources.length,
-                totalPages: 1,
-                items: resources
-            };
-        });
+    getList(page, pageSize){
+        return sagaFlow.getResources(this.id, page, pageSize);
     }
 }
 

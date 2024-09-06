@@ -3,9 +3,9 @@ using SagaFlow;
 
 namespace SimpleMvcExample.ResourceProviders
 {
-    public class SampleTenantProvider : IResourceListProvider<SampleTenant, Guid>
+    public class SampleTenantProvider : IResourceListProvider<SampleTenant, Guid>, IPaginatedProvider<SampleTenant>
     {
-        private static List<SampleTenant> tenants = Enumerable.Range(0, 1000)
+        private static readonly List<SampleTenant> Tenants = Enumerable.Range(0, 1000)
                 .Select(t => new SampleTenant
                 {
                     Id = Guid.NewGuid(),
@@ -14,9 +14,18 @@ namespace SimpleMvcExample.ResourceProviders
                 })
                 .ToList();
 
-        public Task<IList<SampleTenant>> GetAll()
+        public Task<IEnumerable<SampleTenant>> GetAll()
         {
-            return Task.FromResult((IList<SampleTenant>)tenants);
+            return Task.FromResult(Tenants.AsEnumerable());
+        }
+
+        public Task<PaginatedResult<SampleTenant>> GetPage(int page, int pageSize)
+        {
+            return Task.FromResult(new PaginatedResult<SampleTenant>
+            {
+                Resources = Tenants.Skip(page * pageSize).Take(pageSize),
+                TotalResources = Tenants.Count,
+            });
         }
     }
 

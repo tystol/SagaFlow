@@ -5,9 +5,9 @@ namespace SimpleMvcExample.ResourceProviders;
 
 public class FilenameSuggestionProvider : IResourceListProvider<Filename, FilenameId>
 {
-    public Task<IList<Filename>> GetAll()
+    public Task<IEnumerable<Filename>> GetAll()
     {
-        return Task.FromResult<IList<Filename>>(
+        return Task.FromResult<IEnumerable<Filename>>(
             new List<Filename>()
             {
                 new Filename(new FilenameId(1), "backup.bak"),

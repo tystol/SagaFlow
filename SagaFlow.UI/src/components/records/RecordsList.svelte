@@ -17,7 +17,7 @@
 
     const dispatch = createEventDispatcher();
     const sortRegex = /^([\+\-])?(\w+)$/;
-    const perPage = 40;
+    const pageSize = 40;
 
     export let collection;
     export let sort = "";
@@ -58,7 +58,7 @@
         load(1);
     }
 
-    $: canLoadMore = lastTotal >= perPage;
+    $: canLoadMore = lastTotal >= pageSize;
 
     $: totalBulkSelected = Object.keys(bulkSelected).length;
 
@@ -164,7 +164,7 @@
         }
 
         return ApiClient.resourceList(collection.id)
-            .getList(page, perPage, {
+            .getList(page, pageSize, {
                 sort: listSort,
                 skipTotal: 1,
                 filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
