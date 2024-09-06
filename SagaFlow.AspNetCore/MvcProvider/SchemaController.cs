@@ -29,6 +29,15 @@ namespace SagaFlow.MvcProvider
                     {
                         Name = r.Name,
                         Href = r.ListingRouteTemplate,
+                        Schema = r.ResourceSchema
+                            .Select(rs => new ResourcePropertySchema
+                            {
+                                Name = rs.PropertyInfo.Name.ToCamelCase(),
+                                // TODO: map strong typed Ids to their primitive replacement for front end usage.
+                                Type = rs.PropertyInfo.PropertyType.Name.ToLowerInvariant(),
+                                IsIdKey = rs.IsIdProperty,
+                                IsTitleKey = rs.IsTitleProperty,
+                            }).ToList(),
                         ResourceMetadata = new ResourceMetadata
                         {
                             IdKey = "id",
@@ -66,7 +75,16 @@ namespace SagaFlow.MvcProvider
     {
         public string Name { get; set; }
         public string Href { get; set; }
-        public ResourceMetadata ResourceMetadata { get; set; }
+        public List<ResourcePropertySchema> Schema { get; set; }
+        public ResourceMetadata ResourceMetadata { get; set; } //TODO: remove, use ResourcePropertySchema instead
+    }
+
+    public class ResourcePropertySchema
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public bool IsIdKey { get; set; }
+        public bool IsTitleKey { get; set; }
     }
 
     public class ResourceMetadata

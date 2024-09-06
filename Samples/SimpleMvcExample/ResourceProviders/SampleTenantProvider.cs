@@ -10,6 +10,7 @@ namespace SimpleMvcExample.ResourceProviders
                 {
                     Id = Guid.NewGuid(),
                     Name = "Tenant " + (t + 1),
+                    Description = "Lorem Ipsum..."
                 })
                 .ToList();
 
@@ -24,5 +25,6 @@ namespace SimpleMvcExample.ResourceProviders
     {
         public Guid Id { get; init; }
         public string Name { get; init; }
+        public string Description { get; init; }
     }
 }

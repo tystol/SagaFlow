@@ -1187,10 +1187,12 @@ export default class CommonHelper {
             case "primary":
                 return "ri-key-line";
             case "text":
+            case "string":
                 return "ri-text";
             case "number":
                 return "ri-hashtag";
             case "date":
+            case "datetime":
                 return "ri-calendar-line";
             case "bool":
                 return "ri-toggle-line";

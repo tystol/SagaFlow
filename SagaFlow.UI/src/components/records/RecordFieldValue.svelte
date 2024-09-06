@@ -1,7 +1,7 @@
 <script>
     import CommonHelper from "@/utils/CommonHelper";
     import tooltip from "@/actions/tooltip";
-    import FormattedDate from "@/components/base/FormattedDate.svelte";
+    import FormattedDate from "../base/FormattedDate.svelte";
     import CopyIcon from "@/components/base/CopyIcon.svelte";
     import RecordFileThumb from "@/components/records/RecordFileThumb.svelte";
     import RecordInfo from "@/components/records/RecordInfo.svelte";
@@ -75,7 +75,7 @@
         />
         -->
     {/if}
-{:else if field.type === "date"}
+{:else if field.type === "date" || field.type === "datetime"}
     <FormattedDate date={rawValue} />
 {:else if field.type === "select"}
     <div class="inline-flex">

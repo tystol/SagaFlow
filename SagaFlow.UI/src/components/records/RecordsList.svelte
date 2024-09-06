@@ -2,7 +2,7 @@
     import { createEventDispatcher } from "svelte";
     import { fly } from "svelte/transition";
     import ApiClient from "../../utils/ApiClient";
-    import CommonHelper from "@/utils/CommonHelper";
+    import CommonHelper from "../../utils/CommonHelper";
     import tooltip from "@/actions/tooltip";
     import { confirm } from "@/stores/confirmation";
     import { addSuccessToast } from "@/stores/toasts";
@@ -13,7 +13,7 @@
     import CopyIcon from "@/components/base/CopyIcon.svelte";
     import FormattedDate from "@/components/base/FormattedDate.svelte";
     import Scroller from "@/components/base/Scroller.svelte";
-    import RecordFieldValue from "@/components/records/RecordFieldValue.svelte";
+    import RecordFieldValue from "./RecordFieldValue.svelte";
 
     const dispatch = createEventDispatcher();
     const sortRegex = /^([\+\-])?(\w+)$/;
@@ -52,7 +52,7 @@
 
     $: relFields = fields.filter((field) => field.type === "relation");
 
-    $: visibleFields = fields.filter((field) => !hiddenColumns.includes(field.id));
+    $: visibleFields = fields.filter((field) => !hiddenColumns.includes(field.id) && !field.isIdKey);
 
     $: if (collection?.id && sort !== -1 && filter !== -1) {
         load(1);
