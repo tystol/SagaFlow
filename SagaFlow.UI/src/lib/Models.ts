@@ -36,7 +36,7 @@ export interface Command {
     name: string;
     description: string;
     href: string;
-    parameters: Record<string, Parameter>;
+    schema: Record<string, Parameter>;
 };
 
 export interface Config {

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using SagaFlow.Interfaces;
 
 namespace SimpleMvcExample.Messages
@@ -19,5 +20,8 @@ namespace SimpleMvcExample.Messages
         [DisplayName("Override backup")]
         [Description("Override any existing backup sets")]
         public bool OverrideBackup { get; init; }
+        
+        [DisplayName("Start At")]
+        public DateTime? StartBackupDateTime { get; init; }
     }
 }

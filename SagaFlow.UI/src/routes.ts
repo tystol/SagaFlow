@@ -2,12 +2,22 @@ import Commands from './routes/commands.svelte';
 import Resources from './routes/resources.svelte';
 import NotFound from './lib/NotFound.svelte';
 import PageRecords from "./components/records/PageRecords.svelte";
+import {wrap} from 'svelte-spa-router/wrap'
 
 const routes = {
     '/': NotFound,
-    '/commands/:id': Commands,
-    '/resources/:id': Resources,
-    '/collections': PageRecords,
+    '/resources': wrap({
+        component: PageRecords,
+        props: {
+            type: 'resources'
+        }
+    }),
+    '/commands': wrap({
+        component: PageRecords,
+        props: {
+            type: 'commands'
+        }
+    }),
     // The catch-all route must always be last
     '*': NotFound
 };

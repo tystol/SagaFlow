@@ -19,10 +19,24 @@ class ResourceListService {
     }
 }
 
+class CommandService {
+    constructor(id) {
+        this.id = id;
+    }
+
+    create(commandPayload){
+        return sagaFlow.sendCommandAsync(this.id, commandPayload);
+    }
+}
+
 class SagaFlowApiClient {
 
     resourceList(id){
         return new ResourceListService(id);
+    }
+
+    command(id){
+        return new CommandService(id);
     }
     
     /**

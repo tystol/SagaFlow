@@ -152,6 +152,7 @@ public static class SagaFlowModuleFactory
                            p.PropertyInfo.Name,
                     Description = p.Attributes.OfType<DescriptionAttribute>().FirstOrDefault()?.Description,
                     InputType = p.PropertyInfo.PropertyType,
+                    Required = IsRequiredProperty(p.PropertyInfo, p.Attributes),
                     ResourceProvider = GetTextSuggestionResourceProvider(p.PropertyInfo, resourceProviderMap) ?? 
                                        resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
                     // TODO: Provide alternative to above to map resource providers to command properties. eg. attribute based.
@@ -160,7 +161,13 @@ public static class SagaFlowModuleFactory
         };
     }
 
-   
+    private static bool IsRequiredProperty(PropertyInfo propertyInfo, IEnumerable<Attribute> attributes)
+    {
+        if (Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null)
+            return false;
+        // TODO: implement required vs optional attributes.
+        return true;
+    }
 
     private static ResourceProvider GetTextSuggestionResourceProvider(PropertyInfo propertyInfo, IDictionary<Type, ResourceProvider> resourceProviderMap)
     {

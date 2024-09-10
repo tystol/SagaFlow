@@ -161,7 +161,7 @@
         deletedFileNamesMap = {};
 
         // to avoid layout shifts we replace only the file and non-schema fields
-        const skipFields = collection?.schema?.filter((f) => f.type != "file")?.map((f) => f.name) || [];
+        const skipFields = collection?.schema?.filter((f) => f.type != "file")?.map((f) => f.id) || [];
         for (let k in newOriginal) {
             if (skipFields.includes(k)) {
                 continue;
@@ -216,8 +216,8 @@
 
         const fileFields = collection?.schema?.filter((f) => f.type === "file");
         for (let field of fileFields) {
-            delete cloneA[field.name];
-            delete cloneB[field.name];
+            delete cloneA[field.id];
+            delete cloneB[field.id];
         }
 
         // props to exclude from the checks
@@ -247,12 +247,12 @@
 
             let result;
             if (isNew) {
-                result = await ApiClient.collection(collection.id).create(data);
+                result = await ApiClient.command(collection.id).create(data);
             } else {
                 result = await ApiClient.collection(collection.id).update(record.id, data);
             }
 
-            addSuccessToast(isNew ? "Successfully created record." : "Successfully updated record.");
+            addSuccessToast(isNew ? "Successfully sent command." : "Successfully updated record.");
 
             deleteDraft();
 
@@ -294,7 +294,6 @@
 
     function exportFormData() {
         const data = structuredClone(record || {});
-        const formData = new FormData();
 
         const exportableFields = {
             id: data.id,
@@ -303,12 +302,30 @@
         const jsonFields = {};
 
         for (const field of collection?.schema || []) {
-            exportableFields[field.name] = true;
+            exportableFields[field.id] = true;
 
             if (field.type == "json") {
-                jsonFields[field.name] = true;
+                jsonFields[field.id] = true;
             }
         }
+
+        // export base fields
+        for (const key in data) {
+            // skip non-schema fields
+            if (!exportableFields[key]) {
+                continue;
+            }
+
+            // normalize nullable values
+            if (typeof data[key] === "undefined") {
+                data[key] = null;
+            }
+        }
+
+        // TODO: the below converts to a FormData (to handle file uploads) which we may still need to handle diff later, for now, just return json object.
+        return data;
+
+        const formData = new FormData();
 
         if (isAuthCollection) {
             exportableFields["username"] = true;
@@ -365,9 +382,9 @@
 
         // unset deleted files (if any)
         for (const key in deletedFileNamesMap) {
-            const names = CommonHelper.toArray(deletedFileNamesMap[key]);
-            for (const name of names) {
-                formData.append(key + "." + name, "");
+            const fieldIds = CommonHelper.toArray(deletedFileNamesMap[key]);
+            for (const id of fieldIds) {
+                formData.append(key + "." + id, "");
             }
         }
 
@@ -430,7 +447,7 @@
             const fields = collection?.schema || [];
             for (const field of fields) {
                 if (field.type === "file") {
-                    delete clone[field.name];
+                    delete clone[field.id];
                 }
             }
         }
@@ -485,8 +502,8 @@
             <h4 class="panel-title txt-hint">Loading...</h4>
         {:else}
             <h4 class="panel-title">
-                {isNew ? "New" : "Edit"}
-                <strong>{collection?.name}</strong> record
+                {isNew ? "Run" : "Edit"}
+                <strong>{collection?.name}</strong> command
             </h4>
 
             {#if !isNew}
@@ -635,36 +652,36 @@
                 {/if}
             {/if}
 
-            {#each collection?.schema || [] as field (field.name)}
-                {#if field.type === "text"}
-                    <TextField {field} bind:value={record[field.name]} />
+            {#each collection?.schema || [] as field (field.id)}
+                {#if field.type === "text" || field.type === 'string'}
+                    <TextField {field} bind:value={record[field.id]} />
                 {:else if field.type === "number"}
-                    <NumberField {field} bind:value={record[field.name]} />
-                {:else if field.type === "bool"}
-                    <BoolField {field} bind:value={record[field.name]} />
+                    <NumberField {field} bind:value={record[field.id]} />
+                {:else if field.type === "bool" || field.type === 'boolean'}
+                    <BoolField {field} bind:value={record[field.id]} />
                 {:else if field.type === "email"}
-                    <EmailField {field} bind:value={record[field.name]} />
+                    <EmailField {field} bind:value={record[field.id]} />
                 {:else if field.type === "url"}
-                    <UrlField {field} bind:value={record[field.name]} />
+                    <UrlField {field} bind:value={record[field.id]} />
                 {:else if field.type === "editor"}
-                    <!--<EditorField {field} bind:value={record[field.name]} />-->
+                    <!--<EditorField {field} bind:value={record[field.id]} />-->
                     <div>NOT SUPPORTED</div>
-                {:else if field.type === "date"}
-                    <DateField {field} bind:value={record[field.name]} />
+                {:else if field.type === "date" || field.type === 'datetime'}
+                    <DateField mode={field.type} {field} bind:value={record[field.id]} />
                 {:else if field.type === "select"}
-                    <SelectField {field} bind:value={record[field.name]} />
+                    <SelectField {field} bind:value={record[field.id]} />
                 {:else if field.type === "json"}
-                    <JsonField {field} bind:value={record[field.name]} />
+                    <JsonField {field} bind:value={record[field.id]} />
                 {:else if field.type === "file"}
                     <FileField
                         {field}
                         {record}
-                        bind:value={record[field.name]}
-                        bind:uploadedFiles={uploadedFilesMap[field.name]}
-                        bind:deletedFileNames={deletedFileNamesMap[field.name]}
+                        bind:value={record[field.id]}
+                        bind:uploadedFiles={uploadedFilesMap[field.id]}
+                        bind:deletedFileNames={deletedFileNamesMap[field.id]}
                     />
                 {:else if field.type === "relation"}
-                    <RelationField {field} bind:value={record[field.name]} />
+                    <RelationField {field} bind:value={record[field.id]} />
                 {/if}
             {/each}
         </form>
@@ -687,7 +704,7 @@
             class:btn-loading={isSaving || isLoading}
             disabled={!canSave || isSaving}
         >
-            <span class="txt">{isNew ? "Create" : "Save changes"}</span>
+            <span class="txt">{isNew ? "Run" : "Save changes"}</span>
         </button>
     </svelte:fragment>
 </OverlayPanel>

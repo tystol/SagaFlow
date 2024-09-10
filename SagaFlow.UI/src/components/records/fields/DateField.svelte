@@ -4,6 +4,7 @@
     import Field from "@/components/base/Field.svelte";
     import tooltip from "@/actions/tooltip";
 
+    export let mode = 'datetime';
     export let field;
     export let value = undefined;
 
@@ -12,8 +13,8 @@
     // strip ms and zone for backwards compatibility with the older format
     // and because flatpickr currently doesn't have integrated
     // zones support and requires manual parsing and formatting
-    $: if (value && value.length > 19) {
-        value = value.substring(0, 19);
+    $: if (value && value.length > 24) {
+        value = value.substring(0, 24);
     }
 
     $: if (pickerValue != value) {
@@ -35,7 +36,7 @@
 <Field class="form-field {field.required ? 'required' : ''}" name={field.name} let:uniqueId>
     <label for={uniqueId}>
         <i class={CommonHelper.getFieldTypeIcon(field.type)} />
-        <span class="txt">{field.name} (UTC)</span>
+        <span class="txt">{field.name}{mode === 'datetime' ? ' (UTC)' : ''}</span>
     </label>
 
     {#if value && !field.required}
@@ -48,7 +49,7 @@
 
     <Flatpickr
         id={uniqueId}
-        options={CommonHelper.defaultFlatpickrOptions()}
+        options={mode === 'datetime' ? CommonHelper.defaultFlatpickrOptions() : CommonHelper.dateonlyFlatpickrOptions()}
         bind:value={pickerValue}
         bind:formattedValue={value}
         on:close={onClose}

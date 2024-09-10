@@ -1,8 +1,10 @@
 import type {
+    Command,
     Config,
     PagedResultCommandStatus,
     PaginatedResult,
     Resource,
+    ResourceList,
     Setup
 } from "$lib/Models";
 import { tick } from "svelte"
@@ -76,6 +78,8 @@ class SagaFlow
     // using SagaFlow.
     private readonly _servers: Record<string, Writable<ISagaFlowServerState>>;
     
+    private initPromise: Promise<ISagaFlowServerState>;
+    
     constructor() {
         this._servers = {
             [defaultSagaFlowServer]: writable(initialState)
@@ -120,10 +124,23 @@ class SagaFlow
         }
 
         console.debug(`SagaFlow.initialize:     using apiUrl: ${setup.baseUrl} setup webRoot: ${setup.webRoot}, apiRoot: ${setup.apiRoot}`);
-        fetch(`${baseUrl}/${apiRoot}/schema`)
-            .then(async response => await this.processInitializationResponse(setup, response, serverKey))
+        this.initPromise = fetch(`${baseUrl}/${apiRoot}/schema`)
+            .then(response => this.processInitializationResponse(setup, response, serverKey))
             .catch(error => this.handleInitializationErrors(error, setup, serverKey))
-            .finally(() => console.debug("SagaFlow.initialize: completed"));
+            .finally(() => console.debug("SagaFlow.initialize: completed"))
+            .then(() => get(this.getServerStore(serverKey)));
+        
+        return this.initPromise;
+    }
+
+    public async getResourceLists(): Promise<Record<string, ResourceList>> {
+        let state = await this.initPromise;
+        return state.config.resourceLists;
+    }
+
+    public async getCommands(): Promise<Record<string, Command>> {
+        let state = await this.initPromise;
+        return state.config.commands;
     }
     
     // Returns a list of available resources for the provided resource id.
@@ -168,7 +185,7 @@ class SagaFlow
     }
     
     // Sends a command to the SagaFlow webapi to execute a SagaFlow command or job.
-    public async sendCommandAsync<TCommand>(commandId: string, command: TCommand, serverKey: string = defaultSagaFlowServer): Promise<void> {
+    public async sendCommandAsync<TCommand>(commandId: string, command: TCommand, serverKey: string = defaultSagaFlowServer): Promise<Response> {
         const { setup, config } = get(this.getServerStore(serverKey));
         const commandDefinition = config.commands[commandId];
         
@@ -179,22 +196,30 @@ class SagaFlow
         console.debug("SagaFlow.sendCommandAsync:   sending command:", command);
         console.debug(`SagaFlow.sendCommandAsync:   to ${setup.baseUrl}/${commandDefinition.href}`);
         
-       try {
-           const response= await fetch(`${setup.baseUrl}/${commandDefinition.href}`, {
-               method: "POST",
-               headers: {
-                   'Accept': 'application/json',
-                   'Content-Type': 'application/json'
-               },
-               body: JSON.stringify(command),
-           });
-       }
-       catch (error) {
-           console.error("SagaFlow.sendCommandAsync:    Error encountered: ", error);
-       }
-       finally {
-           console.debug("SagaFlow.sendCommandAsync: completed"); 
-       }
+        try {
+            const response = await fetch(`${setup.baseUrl}/${commandDefinition.href}`, {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(command),
+            });
+            if (!response.ok)
+            {
+                var errorPayload = await response.json();
+                // TODO: better error handling
+                throw new Error(errorPayload.title);
+            }
+            return response;
+        }
+        catch (error) {
+            console.error("SagaFlow.sendCommandAsync:    Error encountered: ", error);
+            throw error;
+        }
+        finally {
+            console.debug("SagaFlow.sendCommandAsync: completed"); 
+        }
     }
     
     public async getStatuses(pageIndex: number, pageSize: number, keyword: string, serverKey: string = defaultSagaFlowServer) {
@@ -251,7 +276,8 @@ class SagaFlow
         await tick();
 
         const signalRHub = new SagaFlowSignalRHubClient(serverKey, store);
-        await signalRHub.start();
+        // TODO don't wait for signalR (blocks the init promise when it fails), but need better error handling below
+        signalRHub.start();
 
         store.update(s => ({
             ... s,

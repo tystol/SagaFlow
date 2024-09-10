@@ -18,8 +18,8 @@
   import Toasts from "./components/base/Toasts.svelte";
   import { resetConfirmation } from "./stores/confirmation";
   import { setErrors } from "./stores/errors";
-  import {setContext} from "svelte";
-  import {type Readable, writable, type Writable} from "svelte/store";
+  import { setContext } from "svelte";
+  import { type Readable, writable, type Writable } from "svelte/store";
   import sagaFlow, {defaultSagaFlowServer, type ISagaFlowServerState} from "./state/SagaFlowState";
   import type {Config, Setup} from "$lib/Models";
   import {
@@ -71,7 +71,7 @@
   let store: Readable<ISagaFlowServerState>;
 
     
-  replace("/collections");
+  replace("/resources");
   
   $: store = sagaFlow.state(serverKey);
   $: setup = $store.setup;
@@ -99,12 +99,12 @@
 
             <nav class="main-menu">
                 <a
-                    href="/collections"
+                    href="/resources"
                     class="menu-item"
-                    aria-label="Collections"
+                    aria-label="Resources"
                     use:link
-                    use:active={{ path: "/collections/?.*", className: "current-route" }}
-                    use:tooltip={{ text: "Collections", position: "right" }}
+                    use:active={{ path: "/resources/?.*", className: "current-route" }}
+                    use:tooltip={{ text: "Resources", position: "right" }}
                 >
                     <i class="ri-database-2-line" />
                 </a>
@@ -116,7 +116,7 @@
                     use:active={{ path: "/commands/?.*", className: "current-route" }}
                     use:tooltip={{ text: "Commands", position: "right" }}
                 >
-                    <i class="ri-function-add-line" />
+                    <i class="ri-exchange-2-line" />
                 </a>
                 <a
                     href="/logs"

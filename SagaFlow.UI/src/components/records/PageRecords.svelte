@@ -20,8 +20,12 @@
     import RecordUpsertPanel from "@/components/records/RecordUpsertPanel.svelte";
     import RecordPreviewPanel from "@/components/records/RecordPreviewPanel.svelte";
     import RecordsList from "@/components/records/RecordsList.svelte";
-    import RecordsCount from "@/components/records/RecordsCount.svelte";
+    import RecordsCount from "./RecordsCount.svelte";
     import sagaFlow, {defaultSagaFlowServer} from "../../state/SagaFlowState";
+
+    const resourceListType = 'resources';
+    const commandListType = 'commands';
+    export let type;
 
     const initialQueryParams = new URLSearchParams($querystring);
 
@@ -36,10 +40,8 @@
     let selectedCollectionId = initialQueryParams.get("collectionId") || $activeCollection?.id;
     let totalCount = 0; // used to manully change the count without the need of reloading the recordsCount component
 
-    let sagaflowState = sagaFlow.state(defaultSagaFlowServer);
-
-    $: if (!CommonHelper.isEmpty($sagaflowState.config.resourceLists)){
-        loadCollections(selectedCollectionId);
+    $: if (type) {
+        loadCollections(type);
     }
 
     $: reactiveParams = new URLSearchParams($querystring);
@@ -202,10 +204,10 @@
                     <span class="txt">API Preview</span>
                 </button>
 
-                {#if $activeCollection.type !== "view"}
+                {#if type === commandListType && $activeCollection.type !== "view"}
                     <button type="button" class="btn btn-expanded" on:click={() => recordUpsertPanel?.show()}>
                         <i class="ri-add-line" />
-                        <span class="txt">New record</span>
+                        <span class="txt">Run new command</span>
                     </button>
                 {/if}
             </div>

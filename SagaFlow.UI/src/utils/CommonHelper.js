@@ -1388,11 +1388,30 @@ export default class CommonHelper {
      */
     static defaultFlatpickrOptions() {
         return {
-            dateFormat: "Y-m-d H:i:S",
+            dateFormat: "Z",
+            altFormat: "Y-m-d H:i:S",
+            altInput: true,
             disableMobile: true,
             allowInput: true,
             enableTime: true,
             time_24hr: true,
+            locale: {
+                firstDayOfWeek: 1,
+            },
+        }
+    }
+
+    /**
+     * Returns the date-only Flatpickr initialization options.
+     *
+     * @return {Object}
+     */
+    static dateonlyFlatpickrOptions() {
+        return {
+            dateFormat: "Y-m-d",
+            disableMobile: true,
+            allowInput: true,
+            enableTime: false,
             locale: {
                 firstDayOfWeek: 1,
             },

@@ -2,6 +2,7 @@ import { writable, get } from "svelte/store";
 import ApiClient    from "../utils/ApiClient";
 import CommonHelper from "../utils/CommonHelper";
 import sagaFlow, {defaultSagaFlowServer} from "../state/SagaFlowState";
+import { property } from "lodash";
 
 export const collections                    = writable([]);
 export const activeCollection               = writable({});
@@ -14,7 +15,8 @@ if (typeof BroadcastChannel != "undefined") {
     notifyChannel = new BroadcastChannel("collections");
 
     notifyChannel.onmessage = () => {
-        loadCollections(get(activeCollection)?.id)
+        let activeCollectionValue = get(activeCollection);
+        loadCollections(activeCollectionValue?.type, activeCollectionValue?.id)
     }
 }
 
@@ -73,20 +75,31 @@ export function removeCollection(collection) {
 }
 
 // load all collections (excluding the user profile)
-export async function loadCollections(activeId = null) {
+export async function loadCollections(type, activeId = null) {
     isCollectionsLoading.set(true);
 
     try {
-        /*let items = await ApiClient.collections.getFullList(200, {
-            "sort": "+name",
-        })
 
-        items = CommonHelper.sortCollections(items);
-        */
-        
-        let state = get(sagaFlow.state(defaultSagaFlowServer));
-        let resourceListArray = Object.entries(state.config.resourceLists).map(([id, resourceList]) => ({id, ...resourceList}));
-        let items = resourceListArray;
+        //let items = await ApiClient.collections.getFullList(200, { "sort": "+name" })
+        //items = CommonHelper.sortCollections(items);
+        let items;
+        if (type === 'resources'){
+            let resourceLists = await sagaFlow.getResourceLists();
+            let resourceListArray = Object.entries(resourceLists).map(([id, resourceList]) => ({id, ...resourceList, type}));
+            items = resourceListArray;
+        }
+        else if (type === 'commands'){
+            let commands = await sagaFlow.getCommands();
+            let commandArray = Object.entries(commands).map(([id, command]) => {
+                let commandDefinition = {id, ...command, type};
+                commandDefinition.schema = Object.entries(command.schema).map(([id, property]) => ({id, ...property}));
+                return commandDefinition;
+            });
+            items = commandArray;
+        }
+        else {
+            throw new Error(`Unknown collection type of ${type}`);
+        }
 
         collections.set(items);
 

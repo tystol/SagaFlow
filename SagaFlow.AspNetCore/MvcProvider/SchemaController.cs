@@ -33,8 +33,7 @@ namespace SagaFlow.MvcProvider
                             .Select(rs => new ResourcePropertySchema
                             {
                                 Name = rs.PropertyInfo.Name.ToCamelCase(),
-                                // TODO: map strong typed Ids to their primitive replacement for front end usage.
-                                Type = rs.PropertyInfo.PropertyType.Name.ToLowerInvariant(),
+                                Type = GetSchemaType(rs.PropertyInfo.PropertyType),
                                 IsIdKey = rs.IsIdProperty,
                                 IsTitleKey = rs.IsTitleProperty,
                             }).ToList(),
@@ -50,18 +49,25 @@ namespace SagaFlow.MvcProvider
                         Name = c.Name,
                         Description = c.Description,
                         Href = c.RouteTemplate, // TODO: proper route resolution
-                        Parameters = c.Parameters
+                        Schema = c.Parameters
                             .ToDictionary(p => p.Id, p => new ParameterDefinition
                             {
                                 Name = p.Name,
                                 Description = p.Description,
-                                Required = true,
-                                Type = p.InputType.Name, // TODO: mapping for .net types to front end conceptual types
+                                Required = p.Required,
+                                Type = GetSchemaType(p.InputType),
                                 ResourceListId = p.ResourceProvider?.Id
                             })
                     }),
             };
             return Task.FromResult(result);
+        }
+
+        private static string GetSchemaType(Type type)
+        {
+            // TODO: mapping for .net types to front end conceptual types
+            // TODO: map strong typed Ids to their primitive replacement for front end usage.
+            return type.GetUnderlyingTypeIfNullable().Name.ToLowerInvariant();
         }
     }
 
@@ -75,6 +81,7 @@ namespace SagaFlow.MvcProvider
     {
         public string Name { get; set; }
         public string Href { get; set; }
+        // TODO: map schema as a dictionary, same as command schema.
         public List<ResourcePropertySchema> Schema { get; set; }
         public ResourceMetadata ResourceMetadata { get; set; } //TODO: remove, use ResourcePropertySchema instead
     }
@@ -98,7 +105,7 @@ namespace SagaFlow.MvcProvider
         public string Name { get; init; }
         public string Description { get; init; }
         public string Href { get; init; }
-        public IDictionary<string,ParameterDefinition> Parameters { get; init; }
+        public IDictionary<string,ParameterDefinition> Schema { get; init; }
     }
 
     public class ParameterDefinition

@@ -35,6 +35,7 @@
     let hiddenColumns = [];
     let collumnsToHide = [];
     let hiddenColumnsKey = "";
+    let lastLoadedCollectionId;
 
     $: if (collection?.id) {
         hiddenColumnsKey = collection.id + "@hiddenColumns";
@@ -55,7 +56,10 @@
     $: visibleFields = fields.filter((field) => !hiddenColumns.includes(field.id) && !field.isIdKey);
 
     $: if (collection?.id && sort !== -1 && filter !== -1) {
-        load(1);
+        if (collection?.id != lastLoadedCollectionId) {
+            load(1);
+
+        }
     }
 
     $: canLoadMore = lastTotal >= pageSize;
@@ -133,6 +137,7 @@
         }
 
         isLoading = true;
+        lastLoadedCollectionId = collection?.id;
 
         // allow sorting by the relation display fields
         let listSort = sort;
@@ -553,7 +558,7 @@
                                     on:click={() => dispatch("new")}
                                 >
                                     <i class="ri-add-line" />
-                                    <span class="txt">New record</span>
+                                    <span class="txt">Run new command</span>
                                 </button>
                             {/if}
                         </td>
