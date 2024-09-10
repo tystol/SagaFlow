@@ -21,7 +21,7 @@
 </script>
 
 <a
-    href="/{collection.type}?collectionId={collection.id}"
+    href="/{collection.type}?id={collection.id}"
     class="sidebar-list-item"
     title={collection.name}
     class:active={$activeCollection?.id === collection.id}

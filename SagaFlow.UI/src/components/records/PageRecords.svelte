@@ -37,7 +37,7 @@
     let recordsCount;
     let filter = initialQueryParams.get("filter") || "";
     let sort = initialQueryParams.get("sort") || "-created";
-    let selectedCollectionId = initialQueryParams.get("collectionId") || $activeCollection?.id;
+    let selectedCollectionId = initialQueryParams.get("id") || $activeCollection?.id;
     let totalCount = 0; // used to manully change the count without the need of reloading the recordsCount component
 
     $: if (type) {
@@ -48,10 +48,10 @@
 
     $: if (
         !$isCollectionsLoading &&
-        reactiveParams.get("collectionId") &&
-        reactiveParams.get("collectionId") != selectedCollectionId
+        reactiveParams.get("id") &&
+        reactiveParams.get("id") != selectedCollectionId
     ) {
-        changeActiveCollectionById(reactiveParams.get("collectionId"));
+        changeActiveCollectionById(reactiveParams.get("id"));
     }
 
     // reset filter and sort on collection change
@@ -124,7 +124,7 @@
     function updateQueryParams(extra = {}) {
         const queryParams = Object.assign(
             {
-                collectionId: $activeCollection?.id || "",
+                id: $activeCollection?.id || "",
                 filter: filter,
                 sort: sort,
             },
