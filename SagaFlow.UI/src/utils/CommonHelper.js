@@ -775,6 +775,18 @@ export default class CommonHelper {
     }
 
     /**
+     * Capitalizes the first letter of a lower case string.
+     *
+     * @param  {String} str
+     * @return {String}
+     */
+    static capitalizeFirstLetter(str) {
+        if (!str || str.length < 1)
+            return str;
+        return str[0].toUpperCase() + str.slice(1);
+    }
+
+    /**
      * Returns a human readable file size string from size in bytes.
      *
      * @param  {Number} size s

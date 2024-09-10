@@ -5,6 +5,8 @@
     import CollectionUpsertPanel from "@/components/collections/CollectionUpsertPanel.svelte";
     import CollectionSidebarItem from "@/components/collections/CollectionSidebarItem.svelte";
 
+    export let type;
+
     const pinnedStorageKey = "@pinnedCollections";
 
     let collectionPanel;
@@ -78,7 +80,7 @@
             </div>
             <input
                 type="text"
-                placeholder="Search collections..."
+                placeholder="Search {type}..."
                 name="collections-search"
                 bind:value={searchTerm}
             />

@@ -139,7 +139,7 @@
     <PageWrapper center>
         <div class="placeholder-section m-b-base">
             <span class="loader loader-lg" />
-            <h1>Loading collections...</h1>
+            <h1>Loading {type}...</h1>
         </div>
     </PageWrapper>
 {:else if !$collections.length}
@@ -149,27 +149,27 @@
                 <i class="ri-database-2-line" />
             </div>
             {#if $hideControls}
-                <h1 class="m-b-10">You don't have any collections yet.</h1>
+                <h1 class="m-b-10">You don't have any {type} yet.</h1>
             {:else}
-                <h1 class="m-b-10">Create your first collection to add records!</h1>
+                <h1 class="m-b-10">Create your first {type} to add records!</h1>
                 <button
                     type="button"
                     class="btn btn-expanded-lg btn-lg"
                     on:click={() => collectionUpsertPanel?.show()}
                 >
                     <i class="ri-add-line" />
-                    <span class="txt">Create new collection</span>
+                    <span class="txt">Create new {type}</span>
                 </button>
             {/if}
         </div>
     </PageWrapper>
 {:else}
-    <CollectionsSidebar />
+    <CollectionsSidebar {type} />
 
     <PageWrapper class="flex-content">
         <header class="page-header">
             <nav class="breadcrumbs">
-                <div class="breadcrumb-item">Collections</div>
+                <div class="breadcrumb-item">{CommonHelper.capitalizeFirstLetter(type)}</div>
                 <div class="breadcrumb-item">{$activeCollection.name}</div>
             </nav>
 
