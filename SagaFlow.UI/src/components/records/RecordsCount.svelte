@@ -5,6 +5,7 @@
 
     const dispatch = createEventDispatcher();
 
+    export let type;
     export let collection;
     export let filter = "";
     export let totalCount = 0;
@@ -15,7 +16,9 @@
     let isLoading = false;
 
     $: if (collection?.id && filter !== -1) {
-        reload();
+        if (type === collection?.type){
+            reload();
+        }
     }
 
     export async function reload() {

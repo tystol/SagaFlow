@@ -19,6 +19,7 @@
     const sortRegex = /^([\+\-])?(\w+)$/;
     const pageSize = 40;
 
+    export let type;
     export let collection;
     export let sort = "";
     export let filter = "";
@@ -56,7 +57,7 @@
     $: visibleFields = fields.filter((field) => !hiddenColumns.includes(field.id) && !field.isIdKey);
 
     $: if (collection?.id && sort !== -1 && filter !== -1) {
-        if (collection?.id != lastLoadedCollectionId) {
+        if (type === collection?.type && collection?.id != lastLoadedCollectionId) {
             load(1);
 
         }

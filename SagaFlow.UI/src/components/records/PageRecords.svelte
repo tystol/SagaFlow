@@ -222,6 +222,7 @@
         <div class="clearfix m-b-sm" />
 
         <RecordsList
+            {type}
             bind:this={recordsList}
             collection={$activeCollection}
             bind:filter
@@ -245,6 +246,7 @@
 
         <svelte:fragment slot="footer">
             <RecordsCount
+                {type}
                 bind:this={recordsCount}
                 class="m-r-auto txt-sm txt-hint"
                 collection={$activeCollection}
