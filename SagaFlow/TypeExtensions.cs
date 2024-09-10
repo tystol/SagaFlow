@@ -10,6 +10,19 @@ namespace SagaFlow
         {
             return Nullable.GetUnderlyingType(type) ?? type;
         }
+
+        public static bool IsGenericEnumerable(this Type type)
+        {
+            return type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        }
+        
+        public static Type GetEnumerableInnerType(this Type type)
+        {
+            return type.GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                .Select(i => i.GenericTypeArguments[0])
+                .FirstOrDefault();
+        }
         
         public static bool IsImplementationOfOpenGenericInterface(this Type type, Type openGenericType)
         {

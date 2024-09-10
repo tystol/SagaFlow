@@ -1274,7 +1274,7 @@ export default class CommonHelper {
         }
 
         // arrayable fields
-        if (["select", "relation", "file"].includes(field?.type) && field?.options?.maxSelect != 1) {
+        if (["select", "relation", "file"].includes(field?.type) && field?.multiselect) {
             return "[]";
         }
 
@@ -1841,7 +1841,7 @@ export default class CommonHelper {
             }
 
             // add ":length" and ":each" field modifiers to arrayble fields
-            if (field.options?.maxSelect != 1 && ["select", "file", "relation"].includes(field.type)) {
+            if (field.multiselect && ["select", "file", "relation"].includes(field.type)) {
                 result.push(key + ":each");
                 result.push(key + ":length");
             }

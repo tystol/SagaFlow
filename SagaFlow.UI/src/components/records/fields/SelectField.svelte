@@ -6,14 +6,17 @@
     export let field;
     export let value = undefined;
 
-    $: isMultiple = field.options?.maxSelect > 1;
+    $: isMultiple = field.multiselect;
+    
+    // TODO: implement max number of multiselect
+    $: maxSelect = field?.multiselect ? 20 : 1;
 
     $: if (typeof value === "undefined") {
         value = isMultiple ? [] : "";
     }
 
-    $: if (isMultiple && Array.isArray(value) && value.length > field.options.maxSelect) {
-        value = value.slice(value.length - field.options.maxSelect);
+    $: if (isMultiple && Array.isArray(value) && value.length > maxSelect) {
+        value = value.slice(value.length - maxSelect);
     }
 </script>
 
@@ -26,13 +29,13 @@
         id={uniqueId}
         toggle={!field.required || isMultiple}
         multiple={isMultiple}
-        closable={!isMultiple || value?.length >= field.options?.maxSelect}
+        closable={!isMultiple || value?.length >= maxSelect}
         items={field.options?.values}
         searchable={field.options?.values?.length > 5}
         bind:selected={value}
     />
-    {#if field.options?.maxSelect > 1}
-        <div class="help-block">Select up to {field.options.maxSelect} items.</div>
+    {#if maxSelect > 1}
+        <div class="help-block">Select up to {maxSelect} items.</div>
     {/if}
     {#if field.description}<div class="help-block">{field.description}</div>{/if}
 </Field>

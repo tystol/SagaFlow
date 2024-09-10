@@ -5,6 +5,7 @@ import sagaFlow, {defaultSagaFlowServer} from "../state/SagaFlowState";
 import { property } from "lodash";
 
 export const collections                    = writable([]);
+export const resourceLists                  = writable([]);
 export const activeCollection               = writable({});
 export const isCollectionsLoading           = writable(false);
 export const protectedFilesCollectionsCache = writable({});
@@ -102,6 +103,8 @@ export async function loadCollections(type, activeId = null) {
         }
 
         collections.set(items);
+        if (type === 'resources')
+            resourceLists.set(items);
 
         const item = activeId && CommonHelper.findByKey(items, "id", activeId);
         if (item) {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using SagaFlow.Schema;
 
 namespace SagaFlow.MvcProvider
 {
@@ -55,7 +56,8 @@ namespace SagaFlow.MvcProvider
                                 Name = p.Name,
                                 Description = p.Description,
                                 Required = p.Required,
-                                Type = GetSchemaType(p.InputType),
+                                Type = GetSchemaType(p.InputType, p.ResourceProvider),
+                                Multiselect = p.InputType != typeof(String) && p.InputType.GetEnumerableInnerType() != null,
                                 ResourceListId = p.ResourceProvider?.Id
                             })
                     }),
@@ -63,8 +65,14 @@ namespace SagaFlow.MvcProvider
             return Task.FromResult(result);
         }
 
-        private static string GetSchemaType(Type type)
+        private static string GetSchemaType(Type type, ResourceProvider resourceProvider = null)
         {
+            // TODO: better handling of multiselect
+            if (type != typeof(String))
+                type = type.GetEnumerableInnerType() ?? type;
+            // TODO: better handling of value type fields that have an autocomplete via a resource provider
+            if (type != typeof(String) && resourceProvider != null)
+                return "relation";
             // TODO: mapping for .net types to front end conceptual types
             // TODO: map strong typed Ids to their primitive replacement for front end usage.
             return type.GetUnderlyingTypeIfNullable().Name.ToLowerInvariant();
@@ -114,6 +122,7 @@ namespace SagaFlow.MvcProvider
         public string Description { get; set; }
         public bool Required { get; set; }
         public string Type { get; set; } // TODO: proper type system to handle resource list inputs
+        public bool Multiselect { get; set; }
         public string ResourceListId { get; set; }
     }
 }

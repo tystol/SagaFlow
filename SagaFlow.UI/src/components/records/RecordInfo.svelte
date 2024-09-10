@@ -28,7 +28,7 @@
             const fallbackFileField = fields.find((f) => {
                 return (
                     f.type == "file" &&
-                    f.options?.maxSelect == 1 &&
+                    !f.multiselect &&
                     f.options?.mimeTypes?.find((t) => t.startsWith("image/"))
                 );
             });

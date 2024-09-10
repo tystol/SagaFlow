@@ -6,7 +6,7 @@
     import Searchbar from "@/components/base/Searchbar.svelte";
     import RecordInfo from "@/components/records/RecordInfo.svelte";
     import RecordUpsertPanel from "@/components/records/RecordUpsertPanel.svelte";
-    import { collections } from "@/stores/collections";
+    import { collections, resourceLists } from "@/stores/collections";
     import ApiClient from "@/utils/ApiClient";
     import CommonHelper from "@/utils/CommonHelper";
     import { createEventDispatcher } from "svelte";
@@ -28,11 +28,12 @@
     let isLoadingList = false;
     let isLoadingSelected = false;
 
-    $: maxSelect = field?.options?.maxSelect || null;
+    // TODO: implement max number of multiselect
+    $: maxSelect = field?.multiselect ? 20 : 1;
 
-    $: collectionId = field?.options?.collectionId;
+    $: collectionId = field?.resourceListId;
 
-    $: collection = $collections.find((c) => c.id == collectionId) || null;
+    $: collection = $resourceLists.find((c) => c.id == collectionId) || null;
 
     $: if (typeof filter !== "undefined" && pickerPanel?.isActive()) {
         loadList(true); // reset list on filter change
@@ -74,20 +75,30 @@
         // batch load all selected records to avoid parser stack overflow errors
         const filterIds = selectedIds.slice();
         const loadPromises = [];
+        
+        // TODO: quick workaround to get existing selection working (loads list twice, doesnt work when paginated, etc, see below)
+        loadPromises.push(
+            ApiClient.resourceList(collectionId).getList(1, 100, {
+                sort: !isView ? "-created" : "",
+                fields: "*:excerpt(200)",
+                skipTotal: 1,
+            }).then(result => result.items));
+
+
         while (filterIds.length > 0) {
             const filters = [];
             for (const id of filterIds.splice(0, batchSize)) {
                 filters.push(`id="${id}"`);
             }
-
-            loadPromises.push(
+            // TODO: will need something like the below when using paginated resource providers and existing selected items not in first page.
+            /*loadPromises.push(
                 ApiClient.collection(collectionId).getFullList({
                     batch: batchSize,
                     filter: filters.join("||"),
                     fields: "*:excerpt(200)",
                     requestKey: null,
                 }),
-            );
+            );*/
         }
 
         try {
@@ -139,7 +150,7 @@
 
             const fallbackSearchFields = CommonHelper.getAllCollectionIdentifiers(collection);
 
-            const result = await ApiClient.collection(collectionId).getList(page, batchSize, {
+            const result = await ApiClient.resourceList(collectionId).getList(page, batchSize, {
                 filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
                 sort: !isView ? "-created" : "",
                 fields: "*:excerpt(200)",

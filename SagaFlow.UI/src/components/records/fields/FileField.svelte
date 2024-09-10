@@ -29,7 +29,10 @@
         deletedFileNames = CommonHelper.toArray(deletedFileNames);
     }
 
-    $: isMultiple = field.options?.maxSelect > 1;
+    $: isMultiple = field.multiselect;
+    
+    // TODO: implement max number of multiselect
+    $: maxSelect = field?.multiselect ? 20 : 1;
 
     $: if (CommonHelper.isEmpty(value)) {
         value = isMultiple ? [] : "";
@@ -39,7 +42,7 @@
 
     $: maxReached =
         (valueAsArray.length || uploadedFiles.length) &&
-        field.options?.maxSelect <= valueAsArray.length + uploadedFiles.length - deletedFileNames.length;
+        maxSelect <= valueAsArray.length + uploadedFiles.length - deletedFileNames.length;
 
     $: if (uploadedFiles !== -1 || deletedFileNames !== -1) {
         triggerListChange();
@@ -86,7 +89,7 @@
         for (const file of files) {
             const currentTotal = valueAsArray.length + uploadedFiles.length - deletedFileNames.length;
 
-            if (field.options?.maxSelect <= currentTotal) {
+            if (maxSelect <= currentTotal) {
                 break;
             }
 

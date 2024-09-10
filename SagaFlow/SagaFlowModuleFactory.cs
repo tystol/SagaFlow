@@ -154,7 +154,7 @@ public static class SagaFlowModuleFactory
                     InputType = p.PropertyInfo.PropertyType,
                     Required = IsRequiredProperty(p.PropertyInfo, p.Attributes),
                     ResourceProvider = GetTextSuggestionResourceProvider(p.PropertyInfo, resourceProviderMap) ?? 
-                                       resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
+                                       resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType.GetEnumerableInnerType() ?? p.PropertyInfo.PropertyType),
                     // TODO: Provide alternative to above to map resource providers to command properties. eg. attribute based.
                 })
                 .ToList()

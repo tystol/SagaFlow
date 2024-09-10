@@ -106,7 +106,7 @@
 {:else if field.type === "file"}
     {@const files = CommonHelper.toArray(rawValue)}
     {@const filesLimit = short ? 10 : 500}
-    <div class="inline-flex" class:multiple={field.options?.maxSelect != 1}>
+    <div class="inline-flex" class:multiple={field.multiselect}>
         {#each files.slice(0, filesLimit) as filename, i (i + filename)}
             <RecordFileThumb {record} {filename} size="sm" />
         {/each}

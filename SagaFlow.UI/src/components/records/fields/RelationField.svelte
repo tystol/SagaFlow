@@ -20,7 +20,7 @@
     let loadTimeoutId;
     let invalidIds = [];
 
-    $: isMultiple = field.options?.maxSelect != 1;
+    $: isMultiple = field.multiselect;
 
     $: if (typeof value != "undefined") {
         fieldRef?.changed();
