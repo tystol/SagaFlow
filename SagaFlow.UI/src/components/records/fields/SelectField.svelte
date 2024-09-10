@@ -34,4 +34,5 @@
     {#if field.options?.maxSelect > 1}
         <div class="help-block">Select up to {field.options.maxSelect} items.</div>
     {/if}
+    {#if field.description}<div class="help-block">{field.description}</div>{/if}
 </Field>

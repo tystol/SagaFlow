@@ -13,4 +13,5 @@
         <span class="txt">{field.name}</span>
     </label>
     <AutoExpandTextarea id={uniqueId} required={field.required} bind:value />
+    {#if field.description}<div class="help-block">{field.description}</div>{/if}
 </Field>

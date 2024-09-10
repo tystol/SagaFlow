@@ -236,5 +236,6 @@
                 </button>
             </div>
         </div>
+        {#if field.description}<div class="help-block">{field.description}</div>{/if}
     </Field>
 </div>

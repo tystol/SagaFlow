@@ -54,6 +54,8 @@
         bind:formattedValue={value}
         on:close={onClose}
     />
+    
+    {#if field.description}<div class="help-block">{field.description}</div>{/if}
 </Field>
 
 <style>
