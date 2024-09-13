@@ -1,5 +1,6 @@
 import type {
     Command,
+    CommandHistory,
     Config,
     PagedResultCommandStatus,
     PaginatedResult,
@@ -144,7 +145,7 @@ class SagaFlow
     }
     
     // Returns a list of available resources for the provided resource id.
-    public async getResources(resourceId: string, page?: number, pageSize?: number): Promise<PaginatedResult> {
+    public async getResources(resourceId: string, page?: number, pageSize?: number): Promise<PaginatedResult<Resource>> {
         const store = this.getServerStore(defaultSagaFlowServer)
         const { setup, config, resourceCache } = get(store);
 
@@ -161,7 +162,7 @@ class SagaFlow
         if (!response.ok) throw Error(`Unable to fetch list of ${resourceId}`)
 
         if (response.ok) {
-            const result: PaginatedResult = await response.json();
+            const result: PaginatedResult<Resource> = await response.json();
 
             if (!usingPagination){
                 result.page = 1;
@@ -190,6 +191,7 @@ class SagaFlow
         const commandDefinition = config.commands[commandId];
         
         if (!commandDefinition)
+            throw new Error(`Command ${commandId} not found`);
 
         console.debug("SagaFlow.sendCommandAsync: started");
 
@@ -222,21 +224,29 @@ class SagaFlow
         }
     }
     
-    public async getStatuses(pageIndex: number, pageSize: number, keyword: string, serverKey: string = defaultSagaFlowServer) {
-        const store = this.getServerStore(serverKey)
-        const { setup} = get(store);
+    public async getCommandHistory(commandId: string, page: number, pageSize: number, keyword: string, serverKey: string = defaultSagaFlowServer) {
+        const { setup, config } = get(this.getServerStore(serverKey));
+        const commandDefinition = config.commands[commandId];
+        
+        if (!commandDefinition)
+            throw new Error(`Command ${commandId} not found`);
         
         console.debug("SagaFlow.getStatuses: started");
 
-        console.debug(`SagaFlow.getStatuses:   sending command: pageIndex: ${pageIndex}, pageSize: ${pageSize}, keyworkd: ${keyword}`);
+        console.debug(`SagaFlow.getStatuses:   sending command: page: ${page}, pageSize: ${pageSize}, keyword: ${keyword}`);
 
-        const response = await fetch(`${setup.baseUrl}/${setup.apiRoot}/commands?pageIndex=${pageIndex}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`);
+        
+        const usingPagination = page != undefined && pageSize != undefined;
+        const pageQuery = usingPagination ? `?page=${page}&pagesize=${pageSize}` : "";
+        const response = await fetch(`${setup.baseUrl}/${commandDefinition.href}${pageQuery}`);
 
-        if (!response.ok) throw Error(`Unable to fetch statuses`);
+        //const response = await fetch(`${setup.baseUrl}/${setup.apiRoot}/commands?pageIndex=${pageIndex}&pageSize=${pageSize}&keyword=${encodeURIComponent(keyword)}`);
 
-        if (response.ok) {
-            const data: PagedResultCommandStatus = await response.json();
+        if (!response.ok) throw Error(`Unable to fetch command history`);
 
+        const data: PaginatedResult<CommandHistory> = await response.json();
+
+            /*
             store.update(s => ({
                 ...s,
                 hasCommandStatuses: true,
@@ -250,9 +260,9 @@ class SagaFlow
                     }))
                 }
             }))
+            */
 
-            return data;
-        }
+        return data;
     }
     
     private async processInitializationResponse(setup: Setup, response: Response, serverKey: string)

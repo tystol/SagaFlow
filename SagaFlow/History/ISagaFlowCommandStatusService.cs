@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 public interface ISagaFlowCommandStatusService
 {

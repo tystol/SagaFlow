@@ -86,7 +86,11 @@ export async function loadCollections(type, activeId = null) {
         let items;
         if (type === 'resources'){
             let resourceLists = await sagaFlow.getResourceLists();
-            let resourceListArray = Object.entries(resourceLists).map(([id, resourceList]) => ({id, ...resourceList, type}));
+            let resourceListArray = Object.entries(resourceLists).map(([id, rl]) => {
+                let resourceList = {id, ...rl, type};
+                resourceList.schema = Object.entries(rl.schema).map(([id, property]) => ({id, ...property}));
+                return resourceList;
+            });
             items = resourceListArray;
         }
         else if (type === 'commands'){

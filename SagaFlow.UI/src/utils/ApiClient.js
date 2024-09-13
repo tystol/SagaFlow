@@ -27,6 +27,10 @@ class CommandService {
     create(commandPayload){
         return sagaFlow.sendCommandAsync(this.id, commandPayload);
     }
+
+    getHistory(page, pageSize){
+        return sagaFlow.getCommandHistory(this.id, page, pageSize);
+    }
 }
 
 class SagaFlowApiClient {

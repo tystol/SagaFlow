@@ -8,7 +8,7 @@ using Rebus.Config;
 using SagaFlow.Authentications;
 using SagaFlow.Schema;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 public static class SagaFlowRebusEvents
 {
@@ -85,6 +85,7 @@ public static class SagaFlowRebusEvents
                         Name = headers[SagaFlowCommandName],
                         CommandName = commandDefinition.Name,
                         CommandType = commandDefinition.CommandType.Name,
+                        Command = command,
                         InitiatingUser = headers[SagaFlowInitiatingUsername],
                         StartDateTime = startDate,
                         CommandArgs = JsonSerializer.Serialize(command),

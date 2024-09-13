@@ -1,6 +1,6 @@
 ﻿using Rebus.Config;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 internal static class SagaFlowStatusConfiguration
 {

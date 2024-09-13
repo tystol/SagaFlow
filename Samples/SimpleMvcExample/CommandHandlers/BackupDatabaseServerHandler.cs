@@ -1,6 +1,6 @@
 ﻿using Rebus.Handlers;
 using SagaFlow;
-using SagaFlow.Status;
+using SagaFlow.History;
 using SimpleMvcExample.Messages;
 
 namespace SimpleMvcExample.CommandHandlers

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 public record SagaFlowCommandId(Guid Value)
 {
@@ -38,6 +38,7 @@ public class SagaFlowCommandStatus
     public string CommandName { get; init; }
     
     public string CommandType { get; init; }
+    public object Command { get; init; }
     
     public string CommandArgs { get; init; }
     

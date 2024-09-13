@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 public interface ISagaFlowCommandStateChangedHandler
 {

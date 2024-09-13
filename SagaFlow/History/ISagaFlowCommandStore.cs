@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 public interface ISagaFlowCommandStore
 {
@@ -13,6 +13,8 @@ public interface ISagaFlowCommandStore
     Task<SagaFlowCommandStatus> GetCommand(SagaFlowCommandId commandId);
 
     Task<PagedResult<SagaFlowCommandStatus>> GetCommands(int index, int pageSize, string keyword);
+
+    Task<PagedResult<SagaFlowCommandStatus>> GetCommandHistory<T>(int pageIndex, int pageSize);
 }
 
 /// <summary>
@@ -59,6 +61,24 @@ internal class InMemorySagaFlowCommandStore : ISagaFlowCommandStore
         return Task.FromResult(new PagedResult<SagaFlowCommandStatus>(
             items,
             index,
+            pageSize,
+            total));
+    }
+    public Task<PagedResult<SagaFlowCommandStatus>> GetCommandHistory<T>(int pageIndex, int pageSize)
+    {
+        var query = InMemoryStore.Values
+            .AsQueryable()
+            .Where(command => command.CommandType == typeof(T).Name);
+        
+        var total = query.Count();
+        var items = query
+            .OrderByDescending(command => command.StartDateTime)
+            .Skip(pageSize * pageIndex)
+            .Take(pageSize);
+
+        return Task.FromResult(new PagedResult<SagaFlowCommandStatus>(
+            items,
+            pageIndex,
             pageSize,
             total));
     }

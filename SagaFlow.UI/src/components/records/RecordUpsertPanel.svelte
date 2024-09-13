@@ -262,10 +262,13 @@
                 replaceOriginal(result);
             }
 
-            dispatch("save", {
+            // delay to give time for server to record command before UI reloads command history.
+            // TODO: with the eventual consistent nature of this design (effectively CQRS) we should update UI with a local copy of the data, rather than rely on server reload straight after sending.
+            setTimeout(() => dispatch("save", {
                 isNew: isNew,
                 record: result,
-            });
+            }), 200);
+            
         } catch (err) {
             ApiClient.error(err);
         }

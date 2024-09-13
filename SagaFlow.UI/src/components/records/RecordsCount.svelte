@@ -33,11 +33,19 @@
             const fallbackSearchFields = CommonHelper.getAllCollectionIdentifiers(collection);
 
             // TODO: don't query server again when not using paginated providers. obtain total items count from 1st query that loaded all data.
-            const result = await ApiClient.resourceList(collection.id).getList(1, 1, {
-                filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
-                fields: "id",
-                requestKey: "records_count",
-            });
+            let dataFetch = collection.type === 'resources' ?
+                ApiClient.resourceList(collection.id).getList(1, 1, {
+                    filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
+                    fields: "id",
+                    requestKey: "records_count",
+                })
+                :
+                ApiClient.command(collection.id).getHistory(1, 1, {
+                    filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
+                    fields: "id",
+                    requestKey: "records_count",
+                });
+            let result = await dataFetch;
 
             totalCount = result.totalItems;
             dispatch("count", totalCount);

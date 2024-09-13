@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Rebus.Pipeline;
 
-namespace SagaFlow.Status;
+namespace SagaFlow.History;
 
 public interface ISagaFlowCommandContext
 {

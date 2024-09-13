@@ -1207,6 +1207,7 @@ export default class CommonHelper {
             case "datetime":
                 return "ri-calendar-line";
             case "bool":
+            case "boolean":
                 return "ri-toggle-line";
             case "email":
                 return "ri-mail-line";

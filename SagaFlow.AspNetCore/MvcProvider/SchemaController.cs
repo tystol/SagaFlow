@@ -31,18 +31,14 @@ namespace SagaFlow.MvcProvider
                         Name = r.Name,
                         Href = r.ListingRouteTemplate,
                         Schema = r.ResourceSchema
-                            .Select(rs => new ResourcePropertySchema
+                            .ToDictionary(rs => rs.PropertyInfo.Name.ToCamelCase(), rs => new ResourcePropertySchema
                             {
-                                Name = rs.PropertyInfo.Name.ToCamelCase(),
+                                // TODO: allow an attribute to drive the display name of a resource provider property/column
+                                Name = rs.PropertyInfo.Name,
                                 Type = GetSchemaType(rs.PropertyInfo.PropertyType),
                                 IsIdKey = rs.IsIdProperty,
                                 IsTitleKey = rs.IsTitleProperty,
-                            }).ToList(),
-                        ResourceMetadata = new ResourceMetadata
-                        {
-                            IdKey = "id",
-                            TitleKey = "name",
-                        }
+                            }),
                     }),
                 Commands = schemaProvider.Commands
                     .ToDictionary(c => c.Id, c => new CommandDefinition
@@ -85,16 +81,28 @@ namespace SagaFlow.MvcProvider
         public IDictionary<string,CommandDefinition> Commands { get; set; }
     }
 
-    public class ResourceListDefinition
+    public interface ISchemaDefinition<T> where T : IPropertySchema
     {
-        public string Name { get; set; }
-        public string Href { get; set; }
-        // TODO: map schema as a dictionary, same as command schema.
-        public List<ResourcePropertySchema> Schema { get; set; }
-        public ResourceMetadata ResourceMetadata { get; set; } //TODO: remove, use ResourcePropertySchema instead
+        public string Name { get; }
+        public string Description { get; }
+        public string Href { get; }
+        public IDictionary<string,T> Schema { get; }
     }
 
-    public class ResourcePropertySchema
+    public class ResourceListDefinition : ISchemaDefinition<ResourcePropertySchema>
+    {
+        public string Name { get; set; }
+        public string Description { get; set; } // TODO: populate descriptions for resource lists (tooltip in UI)
+        public string Href { get; set; }
+        public IDictionary<string,ResourcePropertySchema> Schema { get; set; }
+    }
+
+    public interface IPropertySchema
+    {
+        string Type { get; }
+    }
+
+    public class ResourcePropertySchema : IPropertySchema
     {
         public string Name { get; set; }
         public string Type { get; set; }
@@ -102,13 +110,7 @@ namespace SagaFlow.MvcProvider
         public bool IsTitleKey { get; set; }
     }
 
-    public class ResourceMetadata
-    {
-        public string IdKey { get; set; }
-        public string TitleKey { get; set; }
-    }
-
-    public class CommandDefinition
+    public class CommandDefinition : ISchemaDefinition<ParameterDefinition>
     {
         public string Name { get; init; }
         public string Description { get; init; }
@@ -116,7 +118,7 @@ namespace SagaFlow.MvcProvider
         public IDictionary<string,ParameterDefinition> Schema { get; init; }
     }
 
-    public class ParameterDefinition
+    public class ParameterDefinition : IPropertySchema
     {
         public string Name { get; set; }
         public string Description { get; set; }

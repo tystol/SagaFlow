@@ -143,13 +143,13 @@
         // allow sorting by the relation display fields
         let listSort = sort;
         const sortMatch = listSort.match(sortRegex);
-        const sortRelField = sortMatch ? relFields.find((f) => f.name === sortMatch[2]) : null;
+        const sortRelField = sortMatch ? relFields.find((f) => f.id === sortMatch[2]) : null;
         if (sortMatch && sortRelField) {
             const relPresentableFields =
                 $collections
                     ?.find((c) => c.id == sortRelField.options?.collectionId)
                     ?.schema?.filter((f) => f.presentable)
-                    ?.map((f) => f.name) || [];
+                    ?.map((f) => f.id) || [];
 
             const parts = [];
             for (const presentableField of relPresentableFields) {
@@ -163,24 +163,44 @@
         const fallbackSearchFields = CommonHelper.getAllCollectionIdentifiers(collection);
 
         const listFields = editorFields
-            .map((f) => f.name + ":excerpt(200)")
-            .concat(relFields.map((field) => "expand." + field.name + ".*:excerpt(200)"));
+            .map((f) => f.id + ":excerpt(200)")
+            .concat(relFields.map((field) => "expand." + field.id + ".*:excerpt(200)"));
         if (listFields.length) {
             listFields.unshift("*");
         }
-
-        return ApiClient.resourceList(collection.id)
-            .getList(page, pageSize, {
-                sort: listSort,
-                skipTotal: 1,
-                filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
-                expand: relFields.map((field) => field.name).join(","),
-                fields: listFields.join(","),
-                requestKey: "records_list",
-            })
+        
+        let dataFetch = collection.type === 'resources' ?
+            ApiClient.resourceList(collection.id)
+                .getList(page, pageSize, {
+                    sort: listSort,
+                    skipTotal: 1,
+                    filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
+                    expand: relFields.map((field) => field.id).join(","),
+                    fields: listFields.join(","),
+                    requestKey: "records_list",
+                })
+            :
+            ApiClient.command(collection.id)
+                .getHistory(page, pageSize, {
+                    sort: listSort,
+                    skipTotal: 1,
+                    filter: CommonHelper.normalizeSearchFilter(filter, fallbackSearchFields),
+                    expand: relFields.map((field) => field.id).join(","),
+                    fields: listFields.join(","),
+                    requestKey: "records_list",
+                });
+        
+        return dataFetch
             .then(async (result) => {
                 if (page <= 1) {
                     clearList();
+                }
+
+                if (collection.type === 'commands'){
+                    // TODO: better way to handle command history metadata vs raw command data (this doesnt handle conflicting field names)
+                    for (let record of result.items) {
+                        Object.assign(record, record.command);
+                    }
                 }
 
                 isLoading = false;
@@ -315,7 +335,7 @@
                 trigger={columnsTrigger}
             >
                 <div class="txt-hint txt-sm p-5 m-b-5">Toggle columns</div>
-                {#each collumnsToHide as column (column.id + column.name)}
+                {#each collumnsToHide as column (column.id)}
                     <Field class="form-field form-field-sm form-field-toggle m-0 p-5" let:uniqueId>
                         <input
                             type="checkbox"
@@ -363,17 +383,37 @@
                     <SortHeader class="col-type-text col-field-id" name="id" bind:sort>
                         <div class="col-header-content">
                             <i class={CommonHelper.getFieldTypeIcon("primary")} />
-                            <span class="txt">id</span>
+                            <span class="txt">Id</span>
                         </div>
                     </SortHeader>
                 {/if}
+                
+
+                {#if type === 'commands'}
+                    <SortHeader class="col-type-date col-field-started" name="startDateTime" bind:sort>
+                        <div class="col-header-content">
+                            <i class={CommonHelper.getFieldTypeIcon("datetime")} />
+                            <span class="txt">Started</span>
+                        </div>
+                    </SortHeader>
+                {/if}
+
+                {#if type === 'commands'}
+                    <SortHeader class="col-type-date col-field-finished" name="finishDateTime" bind:sort>
+                        <div class="col-header-content">
+                            <i class={CommonHelper.getFieldTypeIcon("datetime")} />
+                            <span class="txt">Finished</span>
+                        </div>
+                    </SortHeader>
+                {/if}
+
 
                 {#if isAuth}
                     {#if !hiddenColumns.includes("@username")}
                         <SortHeader class="col-type-text col-field-id" name="username" bind:sort>
                             <div class="col-header-content">
                                 <i class={CommonHelper.getFieldTypeIcon("user")} />
-                                <span class="txt">username</span>
+                                <span class="txt">Username</span>
                             </div>
                         </SortHeader>
                     {/if}
@@ -381,16 +421,16 @@
                         <SortHeader class="col-type-email col-field-email" name="email" bind:sort>
                             <div class="col-header-content">
                                 <i class={CommonHelper.getFieldTypeIcon("email")} />
-                                <span class="txt">email</span>
+                                <span class="txt">Email</span>
                             </div>
                         </SortHeader>
                     {/if}
                 {/if}
 
-                {#each visibleFields as field (field.name)}
+                {#each visibleFields as field (field.id)}
                     <SortHeader
-                        class="col-type-{field.type} col-field-{field.name}"
-                        name={field.name}
+                        class="col-type-{field.type} col-field-{field.id}"
+                        name={field.id}
                         bind:sort
                     >
                         <div class="col-header-content">
@@ -400,7 +440,7 @@
                     </SortHeader>
                 {/each}
 
-                {#if hasCreated && !hiddenColumns.includes("@created")}
+                {#if type !== 'commands' && hasCreated && !hiddenColumns.includes("@created")}
                     <SortHeader class="col-type-date col-field-created" name="created" bind:sort>
                         <div class="col-header-content">
                             <i class={CommonHelper.getFieldTypeIcon("date")} />
@@ -409,7 +449,7 @@
                     </SortHeader>
                 {/if}
 
-                {#if hasUpdated && !hiddenColumns.includes("@updated")}
+                {#if type !== 'commands' && hasUpdated && !hiddenColumns.includes("@updated")}
                     <SortHeader class="col-type-date col-field-updated" name="updated" bind:sort>
                         <div class="col-header-content">
                             <i class={CommonHelper.getFieldTypeIcon("date")} />
@@ -485,6 +525,20 @@
                             </div>
                         </td>
                     {/if}
+                    
+
+                    {#if type === 'commands'}
+                        <td class="col-type-date col-field-started">
+                            <FormattedDate date={record.startDateTime} />
+                        </td>
+                    {/if}
+
+                    {#if type === 'commands'}
+                        <td class="col-type-date col-field-finished">
+                            <FormattedDate date={record.finishDateTime} />
+                        </td>
+                    {/if}
+
 
                     {#if isAuth}
                         {#if !hiddenColumns.includes("@username")}
@@ -511,19 +565,19 @@
                         {/if}
                     {/if}
 
-                    {#each visibleFields as field (field.name)}
-                        <td class="col-type-{field.type} col-field-{field.name}">
+                    {#each visibleFields as field (field.id)}
+                        <td class="col-type-{field.type} col-field-{field.id}">
                             <RecordFieldValue short {record} {field} />
                         </td>
                     {/each}
 
-                    {#if hasCreated && !hiddenColumns.includes("@created")}
+                    {#if type !== 'commands' && hasCreated && !hiddenColumns.includes("@created")}
                         <td class="col-type-date col-field-created">
                             <FormattedDate date={record.created} />
                         </td>
                     {/if}
 
-                    {#if hasUpdated && !hiddenColumns.includes("@updated")}
+                    {#if type !== 'commands' && hasUpdated && !hiddenColumns.includes("@updated")}
                         <td class="col-type-date col-field-updated">
                             <FormattedDate date={record.updated} />
                         </td>

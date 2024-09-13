@@ -161,7 +161,9 @@ table {
     // field name specific columns
     td.col-field-username,
     .col-field-created,
-    .col-field-updated {
+    .col-field-updated,
+    .col-field-started,
+    .col-field-finished {
         @extend %minColWidth;
     }
     td.col-field-id {

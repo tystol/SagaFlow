@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SagaFlow.AspNetCore.Formatters;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow.MvcProvider;
 

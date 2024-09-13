@@ -11,7 +11,7 @@
     export let field;
     export let short = false;
 
-    $: rawValue = record?.[field.name];
+    $: rawValue = record?.[field.id];
 </script>
 
 {#if field.type === "json"}
@@ -30,7 +30,7 @@
     {/if}
 {:else if CommonHelper.isEmpty(rawValue)}
     <span class="txt-hint">N/A</span>
-{:else if field.type === "bool"}
+{:else if field.type === "bool" || field.type === 'boolean'}
     <span class="txt">{rawValue ? "True" : "False"}</span>
 {:else if field.type === "number"}
     <span class="txt">{rawValue}</span>
@@ -85,7 +85,7 @@
     </div>
 {:else if field.type === "relation"}
     {@const relations = CommonHelper.toArray(rawValue)}
-    {@const expanded = CommonHelper.toArray(record?.expand?.[field.name])}
+    {@const expanded = CommonHelper.toArray(record?.expand?.[field.id])}
     {@const relLimit = short ? 20 : 500}
     <div class="inline-flex">
         {#if expanded.length}
