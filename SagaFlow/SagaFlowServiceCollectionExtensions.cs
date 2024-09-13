@@ -9,7 +9,7 @@ using Rebus.Routing.TypeBased;
 using SagaFlow.Authentications;
 using SagaFlow.Recurring;
 using SagaFlow.Schema;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow;
 

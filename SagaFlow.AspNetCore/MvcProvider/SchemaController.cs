@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using SagaFlow.Schema;
 
 namespace SagaFlow.MvcProvider
 {
@@ -29,11 +30,15 @@ namespace SagaFlow.MvcProvider
                     {
                         Name = r.Name,
                         Href = r.ListingRouteTemplate,
-                        ResourceMetadata = new ResourceMetadata
-                        {
-                            IdKey = "id",
-                            TitleKey = "name",
-                        }
+                        Schema = r.ResourceSchema
+                            .ToDictionary(rs => rs.PropertyInfo.Name.ToCamelCase(), rs => new ResourcePropertySchema
+                            {
+                                // TODO: allow an attribute to drive the display name of a resource provider property/column
+                                Name = rs.PropertyInfo.Name,
+                                Type = GetSchemaType(rs.PropertyInfo.PropertyType),
+                                IsIdKey = rs.IsIdProperty,
+                                IsTitleKey = rs.IsTitleProperty,
+                            }),
                     }),
                 Commands = schemaProvider.Commands
                     .ToDictionary(c => c.Id, c => new CommandDefinition
@@ -41,18 +46,32 @@ namespace SagaFlow.MvcProvider
                         Name = c.Name,
                         Description = c.Description,
                         Href = c.RouteTemplate, // TODO: proper route resolution
-                        Parameters = c.Parameters
+                        Schema = c.Parameters
                             .ToDictionary(p => p.Id, p => new ParameterDefinition
                             {
                                 Name = p.Name,
                                 Description = p.Description,
-                                Required = true,
-                                Type = p.InputType.Name, // TODO: mapping for .net types to front end conceptual types
+                                Required = p.Required,
+                                Type = GetSchemaType(p.InputType, p.ResourceProvider),
+                                Multiselect = p.InputType != typeof(String) && p.InputType.GetEnumerableInnerType() != null,
                                 ResourceListId = p.ResourceProvider?.Id
                             })
                     }),
             };
             return Task.FromResult(result);
+        }
+
+        private static string GetSchemaType(Type type, ResourceProvider resourceProvider = null)
+        {
+            // TODO: better handling of multiselect
+            if (type != typeof(String))
+                type = type.GetEnumerableInnerType() ?? type;
+            // TODO: better handling of value type fields that have an autocomplete via a resource provider
+            if (type != typeof(String) && resourceProvider != null)
+                return "relation";
+            // TODO: mapping for .net types to front end conceptual types
+            // TODO: map strong typed Ids to their primitive replacement for front end usage.
+            return type.GetUnderlyingTypeIfNullable().Name.ToLowerInvariant();
         }
     }
 
@@ -62,33 +81,50 @@ namespace SagaFlow.MvcProvider
         public IDictionary<string,CommandDefinition> Commands { get; set; }
     }
 
-    public class ResourceListDefinition
+    public interface ISchemaDefinition<T> where T : IPropertySchema
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public string Href { get; }
+        public IDictionary<string,T> Schema { get; }
+    }
+
+    public class ResourceListDefinition : ISchemaDefinition<ResourcePropertySchema>
     {
         public string Name { get; set; }
+        public string Description { get; set; } // TODO: populate descriptions for resource lists (tooltip in UI)
         public string Href { get; set; }
-        public ResourceMetadata ResourceMetadata { get; set; }
+        public IDictionary<string,ResourcePropertySchema> Schema { get; set; }
     }
 
-    public class ResourceMetadata
+    public interface IPropertySchema
     {
-        public string IdKey { get; set; }
-        public string TitleKey { get; set; }
+        string Type { get; }
     }
 
-    public class CommandDefinition
+    public class ResourcePropertySchema : IPropertySchema
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public bool IsIdKey { get; set; }
+        public bool IsTitleKey { get; set; }
+    }
+
+    public class CommandDefinition : ISchemaDefinition<ParameterDefinition>
     {
         public string Name { get; init; }
         public string Description { get; init; }
         public string Href { get; init; }
-        public IDictionary<string,ParameterDefinition> Parameters { get; init; }
+        public IDictionary<string,ParameterDefinition> Schema { get; init; }
     }
 
-    public class ParameterDefinition
+    public class ParameterDefinition : IPropertySchema
     {
         public string Name { get; set; }
         public string Description { get; set; }
         public bool Required { get; set; }
         public string Type { get; set; } // TODO: proper type system to handle resource list inputs
+        public bool Multiselect { get; set; }
         public string ResourceListId { get; set; }
     }
 }

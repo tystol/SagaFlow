@@ -10,9 +10,18 @@ export interface Resource {
     name: string;
 };
 
+export interface PaginatedResult<T> {
+    items: T[];
+    page: number;
+    pageSize: number;
+    totalItems?: number;
+    totalPages?: number;
+}
+
 export interface ResourceList {
     name: string;
     href: string;
+    schema: Record<string, Parameter>;
 };
 
 export interface Parameter {
@@ -27,7 +36,7 @@ export interface Command {
     name: string;
     description: string;
     href: string;
-    parameters: Record<string, Parameter>;
+    schema: Record<string, Parameter>;
 };
 
 export interface Config {
@@ -42,8 +51,8 @@ export enum Status {
     Errored = "Errored"
 }
 
-export interface SagaFlowCommandStatus {
-    sagaFlowCommandId: string;
+export interface CommandHistory {
+    commandExecutionId: string;
     status: Status;
     name: string;
     commandName: string;
@@ -59,12 +68,4 @@ export interface SagaFlowCommandStatus {
     
     lastError?: string;
     stackTrace?: string;
-}
-
-export type PagedResultCommandStatus = {
-    page: SagaFlowCommandStatus[],
-    keyword: string;
-    pageIndex: number;
-    pageSize: number;
-    total: number
 }

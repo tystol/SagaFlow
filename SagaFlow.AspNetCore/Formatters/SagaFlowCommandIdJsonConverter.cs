@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow.AspNetCore.Formatters;
 

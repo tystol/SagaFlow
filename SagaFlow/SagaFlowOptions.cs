@@ -10,7 +10,7 @@ using Rebus.Subscriptions;
 using Rebus.Timeouts;
 using Rebus.Transport;
 using SagaFlow.Schema;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow
 {

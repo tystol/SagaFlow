@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using SagaFlow.SignalR.Hubs;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow.SignalR;
 

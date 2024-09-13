@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using SagaFlow.AspNetCore.Formatters;
 using SagaFlow.SignalR.Hubs;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow.SignalR;
 

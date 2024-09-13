@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using SagaFlow.Interfaces;
 
 namespace SimpleMvcExample.Messages
@@ -11,6 +12,9 @@ namespace SimpleMvcExample.Messages
         [DisplayName("Database Server")]
         public DatabaseServerId? DatabaseServerId { get; init; }
         
+        [DisplayName("Destination Servers")]
+        public DatabaseServerId[] DestinationServerIds { get; init; }
+        
         [DisplayName("Destination Filename")]
         [Description("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel turpis vel diam dignissim euismod ut non velit. Integer eget.")]
         [StringPropertySuggestions(ResourceProviderName = "FilenameSuggestionProvider")]
@@ -19,5 +23,8 @@ namespace SimpleMvcExample.Messages
         [DisplayName("Override backup")]
         [Description("Override any existing backup sets")]
         public bool OverrideBackup { get; init; }
+        
+        [DisplayName("Start At")]
+        public DateTime? StartBackupDateTime { get; init; }
     }
 }

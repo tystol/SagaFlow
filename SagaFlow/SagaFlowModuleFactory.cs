@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -89,13 +90,29 @@ public static class SagaFlowModuleFactory
             // quite fit, as the resource type represents a single, where as the below resource provider is more
             // a plural version.
             var resourceName = displayNameAttribute?.DisplayName ?? resourceType.Name + "s";
+
+            var resourceProperties = resourceType.GetProperties();
+            // TODO: allow a marker attribute to dictate the Id and Name/Title properties.
+            var idProperty = resourceProperties.FirstOrDefault(p => p.Name == "Id");
+            if (idProperty == null) throw new Exception("Resource Type is expected to have an Id property.");
+            
+            var nameProperty = resourceProperties.FirstOrDefault(p => p.Name == "Name");
+            if (nameProperty == null) throw new Exception("Resource Type is expected to have a Name property.");
+
             yield return new ResourceProvider
             {
                 Id = resourceName.ToKebabCase(),
                 Type = resourceType,
                 Name = resourceName,
                 ProviderType = resourceProviderType,
-                IdType = idType
+                IdType = idType,
+                ResourceSchema = resourceProperties
+                    .Select(p => new ResourceSchema
+                    {
+                        PropertyInfo = p,
+                        IsIdProperty = p == idProperty,
+                        IsTitleProperty = p == nameProperty,
+                    }).ToImmutableList(),
             };
         }
     }
@@ -135,15 +152,22 @@ public static class SagaFlowModuleFactory
                            p.PropertyInfo.Name,
                     Description = p.Attributes.OfType<DescriptionAttribute>().FirstOrDefault()?.Description,
                     InputType = p.PropertyInfo.PropertyType,
+                    Required = IsRequiredProperty(p.PropertyInfo, p.Attributes),
                     ResourceProvider = GetTextSuggestionResourceProvider(p.PropertyInfo, resourceProviderMap) ?? 
-                                       resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType),
+                                       resourceProviderMap.GetValueOrDefault(p.PropertyInfo.PropertyType.GetEnumerableInnerType() ?? p.PropertyInfo.PropertyType),
                     // TODO: Provide alternative to above to map resource providers to command properties. eg. attribute based.
                 })
                 .ToList()
         };
     }
 
-   
+    private static bool IsRequiredProperty(PropertyInfo propertyInfo, IEnumerable<Attribute> attributes)
+    {
+        if (Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null)
+            return false;
+        // TODO: implement required vs optional attributes.
+        return true;
+    }
 
     private static ResourceProvider GetTextSuggestionResourceProvider(PropertyInfo propertyInfo, IDictionary<Type, ResourceProvider> resourceProviderMap)
     {

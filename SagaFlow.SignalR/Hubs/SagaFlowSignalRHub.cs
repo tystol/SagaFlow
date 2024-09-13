@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using SagaFlow.Status;
+using SagaFlow.History;
 
 namespace SagaFlow.SignalR.Hubs;
 

@@ -7,7 +7,7 @@ import debounce from "lodash/debounce";
 export class SagaFlowSignalRHubClient {
     connection: signalR.HubConnection;
     debouncedGetStatuses = debounce(
-        (pageIndex: number, pageSize: number, keyword: string) => sagaFlow.getStatuses(pageIndex, pageSize, keyword, this.serverKey),
+        (pageIndex: number, pageSize: number, keyword: string) => {},//sagaFlow.getStatuses(pageIndex, pageSize, keyword, this.serverKey),
         200);
     
     constructor(
