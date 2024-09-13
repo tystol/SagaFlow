@@ -1,8 +1,14 @@
 <Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.1088444">
     <PropertyGroup>
         <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
-        <StartupCommand>npm run dev</StartupCommand>
         <IsPackable>false</IsPackable>
+        <BuildCommand>npm run build</BuildCommand>
+        <Configurations>Debug;Release</Configurations>
+        <Platforms>AnyCPU</Platforms>
+        <CleanCommand>npm run clean</CleanCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <Optimize>true</Optimize>
     </PropertyGroup>
 
     <ItemGroup>

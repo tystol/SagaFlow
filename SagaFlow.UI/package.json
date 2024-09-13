@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:web-components": "vite build --config ./vite.webComponents.config.ts",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "clean": "npm run clean:win && npm run clean:nix",
+    "clean:win": "node -e \"if (process.platform === 'win32') process.exit(1)\" || , if exist dist rmdir /Q /S dist",
+    "clean:nix": "node -e \"if (process.platform !== 'win32') process.exit(1)\" || rm -rf dist"
   },
   "devDependencies": {
     "@codemirror/autocomplete": "^6.0.0",
