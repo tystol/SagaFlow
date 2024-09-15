@@ -118,16 +118,16 @@
                 >
                     <i class="ri-exchange-2-line" />
                 </a>
-                {#each Object.entries(config.sidebarWidgets) as [id, widgetUrl]}
+                {#each Object.entries(config.sidebarWidgets) as [id, widget]}
                     <a
-                        href="/widget"
+                        href="/widget/{id}"
                         class="menu-item"
-                        aria-label={id}
+                        aria-label={widget.name}
                         use:link
-                        use:active={{ path: "/widget/?.*", className: "current-route" }}
-                        use:tooltip={{ text:id, position: "right" }}
+                        use:active={{ path: `/widget/${id}/?.*`, className: "current-route" }}
+                        use:tooltip={{ text:widget.name, position: "right" }}
                     >
-                        <i class="ri-bubble-chart-line" />
+                        <i class={widget.icon || "ri-bubble-chart-line"} />
                     </a>
                 {/each}
                 <a

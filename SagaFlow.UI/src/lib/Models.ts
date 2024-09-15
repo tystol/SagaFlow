@@ -42,8 +42,15 @@ export interface Command {
 export interface Config {
     resourceLists: Record<string, ResourceList>;
     commands: Record<string, Command>;
-    sidebarWidgets: Record<string, string>;
+    sidebarWidgets: Record<string, WidgetDefinition>;
 };
+
+export interface WidgetDefinition {
+    name: string;
+    icon: string;
+    href: string;
+    webComponentId: string;
+}
 
 export enum Status {
     Started = "Started",
