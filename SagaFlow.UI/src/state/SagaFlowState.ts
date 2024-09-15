@@ -2,7 +2,6 @@ import type {
     Command,
     CommandHistory,
     Config,
-    PagedResultCommandStatus,
     PaginatedResult,
     Resource,
     ResourceList,
@@ -22,7 +21,6 @@ export interface ISagaFlowServerState {
     resourceCache: Record<string, Resource[]>;
 
     hasCommandStatuses: boolean;
-    commandStatuses: PagedResultCommandStatus;
     
     signalRHub?: SagaFlowSignalRHubClient
 }
@@ -43,19 +41,13 @@ const initialState: ISagaFlowServerState = {
     hasErrorFetchingConfig: false,
     config: {
         commands: {},
-        resourceLists: {}
+        resourceLists: {},
+        sidebarWidgets: {},
     },
     
     resourceCache: {},
 
-    hasCommandStatuses: false,
-    commandStatuses: {
-        page: [],
-        keyword: '',
-        pageIndex: 0,
-        pageSize: 20,
-        total: 0
-    }
+    hasCommandStatuses: false
 }
 
 export const defaultSagaFlowServer: string = "__default_saga_flow_server__";

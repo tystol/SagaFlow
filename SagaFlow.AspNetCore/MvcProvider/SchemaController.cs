@@ -57,8 +57,20 @@ namespace SagaFlow.MvcProvider
                                 ResourceListId = p.ResourceProvider?.Id
                             })
                     }),
+                SidebarWidgets = new Dictionary<string, string>
+                {
+                    {"Example Widget", "/sagaflow/schema/example-widget"}
+                }
             };
             return Task.FromResult(result);
+        }
+        
+        [HttpGet]
+        [Route("example-widget")]
+        public Task<IActionResult> GetWidget()
+        {
+            var stream = System.IO.File.OpenRead("..\\SimpleMvcExample.Widgets\\example-widget\\dist\\example-widget.js");
+            return Task.FromResult((IActionResult)File(stream, "text/javascript", true));
         }
 
         private static string GetSchemaType(Type type, ResourceProvider resourceProvider = null)
@@ -79,6 +91,7 @@ namespace SagaFlow.MvcProvider
     {
         public IDictionary<string,ResourceListDefinition> ResourceLists { get; set; }
         public IDictionary<string,CommandDefinition> Commands { get; set; }
+        public IDictionary<string,string> SidebarWidgets { get; set; }
     }
 
     public interface ISchemaDefinition<T> where T : IPropertySchema
