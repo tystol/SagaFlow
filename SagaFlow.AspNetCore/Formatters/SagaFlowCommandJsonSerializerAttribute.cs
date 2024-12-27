@@ -12,12 +12,14 @@ namespace SagaFlow.AspNetCore.Formatters;
 /// </summary>
 public class SagaFlowCommandJsonSerializerAttribute: Attribute, IResultFilter
 {
+    private static readonly SagaFlowCommandStatusJsonFormatter SagaFlowJsonFormatter = new();
+    
     public void OnResultExecuting(ResultExecutingContext context)
     {
         if (context.Result is ObjectResult objectResult)
         {
             objectResult.Formatters.Clear();
-            objectResult.Formatters.Add(new SagaFlowCommandStatusJsonFormatter());
+            objectResult.Formatters.Add(SagaFlowJsonFormatter);
         }
     }
 

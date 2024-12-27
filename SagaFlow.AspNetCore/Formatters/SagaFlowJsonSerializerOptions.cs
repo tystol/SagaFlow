@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace SagaFlow.AspNetCore.Formatters;
 
@@ -21,6 +22,8 @@ public static class SagaFlowCommandStatusJsonSerializerOptions
             new JsonStringEnumConverter(),
             new SagaFlowCommandIdJsonConverter()
         },
+        // need to specify default for net8 issue: https://github.com/dotnet/aspnetcore/issues/55692
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         
         #if DEBUG
         WriteIndented = true

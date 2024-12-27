@@ -6,6 +6,5 @@ public class SagaFlowCommandStatusJsonFormatter : SystemTextJsonOutputFormatter
 {
     public SagaFlowCommandStatusJsonFormatter() : base(SagaFlowCommandStatusJsonSerializerOptions.JsonSerializerOptions)
     {
-        
     }
 }
