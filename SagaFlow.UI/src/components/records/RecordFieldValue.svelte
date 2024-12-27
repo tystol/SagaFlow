@@ -96,7 +96,7 @@
             {/each}
         {:else}
             {#each relations.slice(0, relLimit) as id}
-                <span class="label">{id}</span>
+                <span class="label">{id?.value ?? id}</span> <!-- TODO: Full support for dynamic resolution of reference field titles -->
             {/each}
         {/if}
         {#if relations.length > relLimit}
