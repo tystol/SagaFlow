@@ -10,19 +10,19 @@ public class HttpContextUsernameProvider : IUsernameProvider
     /// <summary>
     /// When there is Http context but there is no identity names claim, this will be the username used.
     /// </summary>
-    public string AnonymousUserName { get; internal set; } = "Anonymous";
+    public string? AnonymousUserName { get; internal set; } = "Anonymous";
 
     /// <summary>
     /// The username assigned to system initiated commands, such as Cron based jobs.
     /// </summary>
-    public string SystemUsername { get; internal set; } = "System";
+    public string? SystemUsername { get; internal set; } = "System";
 
     public HttpContextUsernameProvider(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public string CurrentUsername => _httpContextAccessor switch
+    public string? CurrentUsername => _httpContextAccessor switch
     {
         { HttpContext: null } => this.SystemUsername,
         _ => _httpContextAccessor?.HttpContext?.User?.Identity?.Name ?? AnonymousUserName

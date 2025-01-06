@@ -30,7 +30,7 @@ namespace SagaFlow
         internal List<Func<IEnumerable<Command>>> Commands { get; } = new List<Func<IEnumerable<Command>>>();
         internal List<Func<IEnumerable<Type>>> CommandTypes { get; } = new List<Func<IEnumerable<Type>>>();
 
-        internal IDictionary<string, object> SetupContext = new Dictionary<string, object>();
+        internal Dictionary<string, object> SetupContext = new Dictionary<string, object>();
 
         public SagaFlowOptions WithOptions(Action<OptionsConfigurer> configurer)
         {

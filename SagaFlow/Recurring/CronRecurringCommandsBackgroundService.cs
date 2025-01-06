@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NCrontab;
 using NCrontab.Scheduler;
-using Rebus.Bus;
 
 namespace SagaFlow.Recurring;
 
@@ -32,13 +31,13 @@ internal class CronRecurringCommandsBackgroundService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var scheduler = new Scheduler(services.GetService<ILogger<Scheduler>>());
-        var bus = services.GetRequiredService<IBus>();
+        var bus = services.GetRequiredService<ISagaFlowCommandBus>();
 
         foreach (var command in sagaFlowModule.Commands.Where(c => c.IsRecurringCommand))
         {
             scheduler.AddTask( CrontabSchedule.Parse(command.CronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true}), ct =>
             {
-                var commandMessage = Activator.CreateInstance(command.CommandType);
+                var commandMessage = Activator.CreateInstance(command.CommandType) ?? throw new ArgumentException($"Could not create instance of type {command.CommandType}");
                 return bus.Send(commandMessage);
             });
         }

@@ -118,7 +118,7 @@ public static class SagaFlowModuleFactory
     }
 
     private static Command BuildCommandFromType(Type commandType,
-        IDictionary<Type, ResourceProvider> resourceProviderMap)
+        IReadOnlyDictionary<Type, ResourceProvider> resourceProviderMap)
     {
         var parameterProps = commandType
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -169,7 +169,7 @@ public static class SagaFlowModuleFactory
         return true;
     }
 
-    private static ResourceProvider GetTextSuggestionResourceProvider(PropertyInfo propertyInfo, IDictionary<Type, ResourceProvider> resourceProviderMap)
+    private static ResourceProvider? GetTextSuggestionResourceProvider(PropertyInfo propertyInfo, IReadOnlyDictionary<Type, ResourceProvider> resourceProviderMap)
     {
         // only use Suggestion resource providers for string
         if (propertyInfo.PropertyType != typeof(string)) return null;

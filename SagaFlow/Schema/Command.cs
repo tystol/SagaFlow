@@ -24,6 +24,6 @@ namespace SagaFlow.Schema
         public string Description { get; set; }
         public Type InputType { get; set; }
         public bool Required { get; set; }
-        public ResourceProvider ResourceProvider { get; set; }
+        public ResourceProvider? ResourceProvider { get; set; }
     }
 }

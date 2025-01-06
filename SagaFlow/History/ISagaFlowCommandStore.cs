@@ -10,9 +10,9 @@ public interface ISagaFlowCommandStore
 {
     Task AddOrUpdateCommand(SagaFlowCommandStatus commandStatus);
 
-    Task<SagaFlowCommandStatus> GetCommand(SagaFlowCommandId commandId);
+    Task<SagaFlowCommandStatus?> GetCommand(SagaFlowCommandId commandId);
 
-    Task<PagedResult<SagaFlowCommandStatus>> GetCommands(int index, int pageSize, string keyword);
+    Task<PagedResult<SagaFlowCommandStatus>> GetCommands(int index, int pageSize, string? keyword);
 
     Task<PagedResult<SagaFlowCommandStatus>> GetCommandHistory<T>(int pageIndex, int pageSize);
 }
@@ -23,8 +23,7 @@ public interface ISagaFlowCommandStore
 internal class InMemorySagaFlowCommandStore : ISagaFlowCommandStore
 {
     private const int MaxNumberOfItems = 300;
-    private static readonly IDictionary<SagaFlowCommandId, SagaFlowCommandStatus> InMemoryStore =
-        new ConcurrentDictionary<SagaFlowCommandId, SagaFlowCommandStatus>();
+    private static readonly ConcurrentDictionary<SagaFlowCommandId, SagaFlowCommandStatus> InMemoryStore = new();
     
     public Task AddOrUpdateCommand(SagaFlowCommandStatus commandStatus)
     {
@@ -35,12 +34,12 @@ internal class InMemorySagaFlowCommandStore : ISagaFlowCommandStore
         return Task.CompletedTask;
     }
 
-    public Task<SagaFlowCommandStatus> GetCommand(SagaFlowCommandId sagaFlowCommandId)
+    public Task<SagaFlowCommandStatus?> GetCommand(SagaFlowCommandId sagaFlowCommandId)
     {
         return Task.FromResult(InMemoryStore.GetValueOrDefault(sagaFlowCommandId));
     }
 
-    public Task<PagedResult<SagaFlowCommandStatus>> GetCommands(int index, int pageSize, string keyword)
+    public Task<PagedResult<SagaFlowCommandStatus>> GetCommands(int index, int pageSize, string? keyword)
     {
         var query = InMemoryStore.Values
             .Where(command =>
@@ -97,7 +96,7 @@ internal class InMemorySagaFlowCommandStore : ISagaFlowCommandStore
 
             foreach (var item in oldestItems)
             {
-                InMemoryStore.Remove(item);
+                InMemoryStore.TryRemove(item);
             }
         }
     }

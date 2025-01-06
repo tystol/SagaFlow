@@ -6,6 +6,7 @@ using Rebus.Retry.Simple;
 using Rebus.Routing.TypeBased;
 using Rebus.Sagas;
 using Rebus.Subscriptions;
+using Rebus.Timeouts;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
 using SagaFlow.SignalR;
@@ -45,6 +46,15 @@ void ConfigureRebusTransport(StandardConfigurer<ITransport> t)
     else
         t.UseInMemoryTransport(new InMemNetwork(),inputQueueName);
 }
+void ConfigureRebusTimeoutStorage(StandardConfigurer<ITimeoutManager> s)
+{
+    if (dbProvider == "sqlserver")
+        s.StoreInSqlServer(db, "Timeouts");
+    else if (dbProvider == "postgres")
+        s.StoreInPostgres(db, "timeouts");
+    else
+        s.StoreInMemory();
+}
 void ConfigureRebusSubscriptions(StandardConfigurer<ISubscriptionStorage> s)
 {
     if (dbProvider == "sqlserver")
@@ -78,10 +88,11 @@ builder.Services.AddSagaFlow(o => o
     //.AddCommandFromEvent<StartSimpleTaskRequested>()
     .WithLogging(l => l.Console())
     .WithTransport(ConfigureRebusTransport)
+    .WithTimeoutStorage(ConfigureRebusTimeoutStorage)
     .WithSubscriptionStorage(ConfigureRebusSubscriptions)
     .WithSagaStorage(ConfigureRebusSagaStorage)
     .WithRouting(r => r.TypeBased()
-        .MapAssemblyOf<ICommand>(inputQueueName)
+        .MapAssemblyDerivedFrom<ICommand>(inputQueueName)
         .Map<Request>(inputQueueName)//backgroundJobsQueueName)
         .Map<Reply>(inputQueueName))//backgroundJobsQueueName))
     .WithSignalR()
@@ -149,17 +160,28 @@ public class TestSaga : Saga<TestSagaData>, IAmInitiatedBy<StartSimpleTask>, IHa
         Console.WriteLine($"{Data.MessagesReceived} messages received to case {Data.CaseNumber}.");
         await bus.Send(new Request{CaseNumber = Data.CaseNumber});
         
-        if (Data.MessagesReceived >= 10)
-            MarkAsComplete();
-        
-        await Task.Delay(500);
+        if (!CompleteIfNeeded())
+            await Task.Delay(500);
     }
 
-    public Task Handle(Reply message)
+    public async Task Handle(Reply message)
     {
         Data.MessagesReceived++;
         Console.WriteLine($"{Data.MessagesReceived} messages received to case {Data.CaseNumber}.");
-        return Task.CompletedTask;
+        
+        if (!CompleteIfNeeded())
+            await bus.Defer(TimeSpan.FromMilliseconds(500), new Request {CaseNumber = Data.CaseNumber});
+    }
+
+    private bool CompleteIfNeeded()
+    {
+        if (Data.MessagesReceived >= 10)
+        {
+            MarkAsComplete();
+            return true;
+        }
+
+        return false;
     }
 }
 

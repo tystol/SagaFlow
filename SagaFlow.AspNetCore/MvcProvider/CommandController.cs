@@ -15,13 +15,15 @@ namespace SagaFlow.MvcProvider
     {
         private readonly SagaFlowModule module;
         private readonly ISagaFlowCommandStore sagaFlowCommandStore;
-        private readonly IBus bus;
+        private readonly ISagaFlowActivityStore activityStore;
+        private readonly ISagaFlowCommandBus commandBus;
 
-        public CommandController(SagaFlowModule module, ISagaFlowCommandStore sagaFlowCommandStore, IBus bus)
+        public CommandController(SagaFlowModule module, ISagaFlowCommandStore sagaFlowCommandStore, ISagaFlowActivityStore activityStore, ISagaFlowCommandBus commandBus)
         {
             this.module = module;
             this.sagaFlowCommandStore = sagaFlowCommandStore;
-            this.bus = bus;
+            this.activityStore = activityStore;
+            this.commandBus = commandBus;
         }
 
         [HttpGet]
@@ -58,13 +60,9 @@ namespace SagaFlow.MvcProvider
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] T value)
+        public async Task<IActionResult> Post([FromBody] T command)
         {
-            var commandId = Guid.NewGuid();
-            var headers = new Dictionary<string, string> {{Headers.CorrelationId, Guid.NewGuid().ToString()}};
-            await bus.Send(value, headers);
-            // TODO: Offer config over whether to send commands as a direct message or publish as event?
-            // await bus.Publish(value);
+            await commandBus.Send(command);
             return Ok();
         }
     }

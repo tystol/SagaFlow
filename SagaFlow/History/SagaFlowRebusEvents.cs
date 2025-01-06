@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
@@ -12,7 +13,7 @@ namespace SagaFlow.History;
 
 public static class SagaFlowRebusEvents
 {
-    internal const string SagaFlowCommandId = nameof(SagaFlowCommandId);
+    internal const string SagaFlowCommandId = "sf-command-id";
 
     internal const string SagaFlowInitiatingUsername = nameof(SagaFlowInitiatingUsername);
     
@@ -31,22 +32,19 @@ public static class SagaFlowRebusEvents
             var usernameProvider = scope.ServiceProvider.GetRequiredService<IUsernameProvider>();
             var commandNameResolver = scope.ServiceProvider.GetRequiredService<IHumanReadableCommandNameResolver>();
             
-            // Generate a new and unique SagaFlowCommandId and assign it to the context
-            headers.TryAdd(SagaFlowCommandId, new SagaFlowCommandId());
-            
-            headers.TryAdd(SagaFlowCommandStartDate, DateTime.UtcNow.ToString("o"));
-
-            headers.TryAdd(SagaFlowInitiatingUsername, usernameProvider.CurrentUsername);
             if (commandNameResolver.IsCommand(command))
             {
+                headers.TryAdd(SagaFlowCommandId, new SagaFlowCommandId());
+                headers.TryAdd(SagaFlowCommandStartDate, DateTime.UtcNow.ToString("o"));
                 headers.TryAdd(SagaFlowCommandName, commandNameResolver.ResolveCommandName(command));
-            }
-
-            if (!headers.TryAdd(SagaFlowCommandAttemptCounter, "1"))
-            {
-                if (int.TryParse(headers[SagaFlowCommandAttemptCounter], out var currentAttempt))
+                headers.TryAdd(SagaFlowInitiatingUsername, usernameProvider.CurrentUsername);
+                
+                if (!headers.TryAdd(SagaFlowCommandAttemptCounter, "1"))
                 {
-                    headers[SagaFlowCommandAttemptCounter] = (++currentAttempt).ToString();
+                    if (int.TryParse(headers[SagaFlowCommandAttemptCounter], out var currentAttempt))
+                    {
+                        headers[SagaFlowCommandAttemptCounter] = (++currentAttempt).ToString();
+                    }
                 }
             }
         };
@@ -56,7 +54,6 @@ public static class SagaFlowRebusEvents
     {
         return (_, headers, command, _, _) =>
         {
-            SagaFlowCommandId sagaFlowCommandId = headers[SagaFlowCommandId]; 
             var commandDefinition = sagaFlowModule.Commands.FirstOrDefault(c => c.CommandType == command.GetType());
 
             if (commandDefinition != null)
@@ -70,6 +67,9 @@ public static class SagaFlowRebusEvents
                 var humanReadablePropertyValues =
                     humanReadableCommandPropertiesResolver.GetDisplayablePropertyValues(command);
 
+                var sagaFlowCommandIdHeader = headers.GetValueOrDefault(SagaFlowCommandId);
+                var sagaFlowCommandId = sagaFlowCommandIdHeader ?? throw new ArgumentException("Missing SagaFlow CommandId header.");
+                
                 if (!int.TryParse(headers[SagaFlowCommandAttemptCounter], out var attempt))
                     attempt = 1;
 
@@ -105,6 +105,14 @@ public static class SagaFlowRebusEvents
             }
         };
     }
+
+    internal static MessageSentEventHandler OnAfterMessageSent(SagaFlowModule sagaFlowModule)
+    {
+        return (_, headers, command, _) =>
+        {
+            
+        };
+    }
     
     internal static MessageHandledEventHandler OnAfterMessageHandled(
         SagaFlowModule sagaFlowModule)
@@ -114,25 +122,28 @@ public static class SagaFlowRebusEvents
             using var scope = sagaFlowModule.ServiceProvider.CreateScope();
             var sagaFlowCommandService = scope.ServiceProvider.GetRequiredService<ISagaFlowCommandStatusService>();
             
-            SagaFlowCommandId sagaFlowCommandId = headers[SagaFlowCommandId];
-            var exception = context.Load<Exception>();
-
-            SagaFlowCommandStatus commandStatus;
-
-            if (exception != null)
+            var sagaFlowCommandId = headers.GetValueOrDefault(SagaFlowCommandId);
+            if (sagaFlowCommandId != null)
             {
-                commandStatus = sagaFlowCommandService.UpdateErrored(sagaFlowCommandId, exception).Result;
+                var exception = context.Load<Exception>();
 
-                PublishErroredCommandStatus(commandStatus, scope.ServiceProvider).Wait();
-            }
-            else
-            {
-                commandStatus = sagaFlowCommandService.UpdateProgress(sagaFlowCommandId, 100).Result;
+                SagaFlowCommandStatus commandStatus;
+
+                if (exception != null)
+                {
+                    commandStatus = sagaFlowCommandService.UpdateErrored(sagaFlowCommandId, exception).Result;
+
+                    PublishErroredCommandStatus(commandStatus, scope.ServiceProvider).Wait();
+                }
+                else
+                {
+                    commandStatus = sagaFlowCommandService.UpdateProgress(sagaFlowCommandId, 100).Result;
                 
-                PublishSuccessCommandStatus(commandStatus, scope.ServiceProvider).Wait();
-            }
+                    PublishSuccessCommandStatus(commandStatus, scope.ServiceProvider).Wait();
+                }
             
-            PublishSagaFlowCommandStateChanged(commandStatus, scope.ServiceProvider).Wait();
+                PublishSagaFlowCommandStateChanged(commandStatus, scope.ServiceProvider).Wait();
+            }
         };
     }
 

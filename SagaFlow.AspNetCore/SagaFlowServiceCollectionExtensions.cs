@@ -5,7 +5,6 @@ using SagaFlow;
 using SagaFlow.AspNetCore.Authentications;
 using SagaFlow.Authentications;
 using SagaFlow.MvcProvider;
-using SagaFlow.Utilities;
 
 
 // ReSharper disable once CheckNamespace
@@ -29,14 +28,14 @@ public static class SagaFlowServiceCollectionExtensions
         {
             var httpContextUsernameProvider = ActivatorUtilities.CreateInstance<HttpContextUsernameProvider>(s);
             
-            if (options.SetupContext.TryGetContextValue<string>(nameof(HttpContextUsernameProvider.SystemUsername), out var systemUserName))
+            if (options.SetupContext.TryGetValue(nameof(HttpContextUsernameProvider.SystemUsername), out var systemUserName))
             {
-                httpContextUsernameProvider.SystemUsername = systemUserName;
+                httpContextUsernameProvider.SystemUsername = systemUserName as string;
             }
             
-            if (options.SetupContext.TryGetContextValue<string>(nameof(HttpContextUsernameProvider.AnonymousUserName), out var anonymousUserName))
+            if (options.SetupContext.TryGetValue(nameof(HttpContextUsernameProvider.AnonymousUserName), out var anonymousUserName))
             {
-                httpContextUsernameProvider.AnonymousUserName = anonymousUserName;
+                httpContextUsernameProvider.AnonymousUserName = anonymousUserName as string;
             }
 
             return httpContextUsernameProvider;

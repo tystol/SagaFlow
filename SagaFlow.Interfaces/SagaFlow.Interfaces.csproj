@@ -5,6 +5,8 @@
         <PackageProjectUrl>https://github.com/tystol/SagaFlow</PackageProjectUrl>
         <RepositoryUrl>https://github.com/tystol/SagaFlow</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

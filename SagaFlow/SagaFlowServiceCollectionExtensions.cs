@@ -30,6 +30,7 @@ public static class SagaFlowServiceCollectionExtensions
         services.AddTransient<IHumanReadableCommandPropertiesResolver, HumanReadableCommandPropertiesResolver>();
         services.AddTransient<IHumanReadableCommandNameResolver, HumanReadableCommandNameResolver>();
         services.AddTransient<ISagaFlowCommandStatusService, SagaFlowCommandStatusService>();
+        services.AddTransient<ISagaFlowCommandBus, RebusCommandBus>();
 
         // Configure and register Rebus
         services.AddRebus(c =>
@@ -70,6 +71,7 @@ public static class SagaFlowServiceCollectionExtensions
         
         // Fallback registration of the InMemorySagaFlowCommandStore if no ISagaFlowCommandStore was registered
         services.TryAddTransient<ISagaFlowCommandStore, InMemorySagaFlowCommandStore>();
+        services.TryAddTransient<ISagaFlowActivityStore, InMemorySagaFlowActivityStore>();
         
         // Fallback registration of IUsernameProvider
         services.TryAddTransient<IUsernameProvider, StubUsernameProvider>();
