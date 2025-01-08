@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rebus.Config;
+using Rebus.Pipeline;
 using Rebus.Retry.Simple;
 using Rebus.Routing.TypeBased;
 using SagaFlow.Authentications;
 using SagaFlow.Recurring;
 using SagaFlow.Schema;
 using SagaFlow.History;
+using SagaFlow.Time;
 
 namespace SagaFlow;
 
@@ -18,7 +21,8 @@ public static class SagaFlowServiceCollectionExtensions
     public static IServiceCollection AddSagaFlowCore(
         this IServiceCollection services,
         SagaFlowOptions options,
-        SagaFlowModule sagaFlowModule)
+        SagaFlowModule sagaFlowModule,
+        Func<PipelineStepInjector,PipelineStepInjector> pipelineAdditions)
     {
         // Register saga/workflow handlers
         foreach (var handlerConfig in options.HandlerSetup) handlerConfig(services);
@@ -58,7 +62,7 @@ public static class SagaFlowServiceCollectionExtensions
                 if (options.TimeoutConfigurer != null)
                     c = c.Timeouts(options.TimeoutConfigurer);
 
-                c.ConfigureSagaFlowEventsForRebus(sagaFlowModule);
+                c.ConfigureSagaFlowEventsForRebus(sagaFlowModule, pipelineAdditions);
 
                 return c;
             },
@@ -71,12 +75,17 @@ public static class SagaFlowServiceCollectionExtensions
         
         // Fallback registration of the InMemorySagaFlowCommandStore if no ISagaFlowCommandStore was registered
         services.TryAddTransient<ISagaFlowCommandStore, InMemorySagaFlowCommandStore>();
+        services.TryAddTransient<ISagaFlowActivityReporter, InMemorySagaFlowActivityStore>();
         services.TryAddTransient<ISagaFlowActivityStore, InMemorySagaFlowActivityStore>();
         
         // Fallback registration of IUsernameProvider
         services.TryAddTransient<IUsernameProvider, StubUsernameProvider>();
+        
+        services.TryAddSingleton<ISagaFlowTime, DefaultSagaFlowTime>();
 
-        services.AddHostedService<CronRecurringCommandsBackgroundService>();
+        services.AddSingleton<CronRecurringCommandsBackgroundService>();
+        services.AddSingleton<IRecurringCommandScopeAccessor>(c => c.GetRequiredService<CronRecurringCommandsBackgroundService>());
+        services.AddHostedService(c => c.GetRequiredService<CronRecurringCommandsBackgroundService>());
         return services;
     }
 

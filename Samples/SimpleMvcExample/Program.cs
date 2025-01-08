@@ -84,7 +84,7 @@ builder.Services.AddSagaFlow(o => o
     .AddResourceProvidersFromAssemblyOf<SampleTenantProvider>()
     .AddHandlersFromAssemblyOf<SimpleTaskHandler>()
     .AddCommandsOfType<ICommand>()
-    .WithOptions(o => o.RetryStrategy(maxDeliveryAttempts: 1)) // Set the number of allow retries, here we set to only try one attempt we will report the error back to the user via SignalR.
+    .WithOptions(o => o.RetryStrategy(maxDeliveryAttempts: 3))
     //.AddCommandFromEvent<StartSimpleTaskRequested>()
     .WithLogging(l => l.Console())
     .WithTransport(ConfigureRebusTransport)

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Rebus.Bus;
 using Rebus.Messages;
 using SagaFlow.AspNetCore.Formatters;
@@ -13,24 +14,22 @@ namespace SagaFlow.MvcProvider
     [Route("[sagaflow-base-path]/commands/[command-type]")]
     public class CommandController<T> : ControllerBase where T : class, new()
     {
-        private readonly SagaFlowModule module;
-        private readonly ISagaFlowCommandStore sagaFlowCommandStore;
         private readonly ISagaFlowActivityStore activityStore;
         private readonly ISagaFlowCommandBus commandBus;
+        private readonly IServiceProvider _scope;
 
-        public CommandController(SagaFlowModule module, ISagaFlowCommandStore sagaFlowCommandStore, ISagaFlowActivityStore activityStore, ISagaFlowCommandBus commandBus)
+        public CommandController(ISagaFlowActivityStore activityStore, ISagaFlowCommandBus commandBus, IServiceProvider scope)
         {
-            this.module = module;
-            this.sagaFlowCommandStore = sagaFlowCommandStore;
             this.activityStore = activityStore;
             this.commandBus = commandBus;
+            _scope = scope;
         }
 
         [HttpGet]
         [SagaFlowCommandJsonSerializer]
         public async Task<PaginatedResult<CommandHistory<T>>> Get(int page = 1, int pageSize = 50)
         {
-            var history = await sagaFlowCommandStore.GetCommandHistory<T>(page - 1, pageSize);
+            var history = await activityStore.GetCommandHistory<T>(page - 1, pageSize);
             return new PaginatedResult<CommandHistory<T>>
             {
                 Items = history.Page.Select(c => new CommandHistory<T>

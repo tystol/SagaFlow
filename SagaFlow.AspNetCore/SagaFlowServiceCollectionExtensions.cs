@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Rebus.Pipeline;
 using SagaFlow;
 using SagaFlow.AspNetCore.Authentications;
+using SagaFlow.AspNetCore.Rebus;
 using SagaFlow.Authentications;
 using SagaFlow.MvcProvider;
 
@@ -43,7 +46,12 @@ public static class SagaFlowServiceCollectionExtensions
         
         var sagaFlowModule = SagaFlowModuleFactory.Create(options, apiBasePath);
 
-        services.AddSagaFlowCore(options, sagaFlowModule);
+        services.AddSagaFlowCore(options, sagaFlowModule, i =>
+        {
+            var httpAccessor = sagaFlowModule.ServiceProvider.GetRequiredService<IHttpContextAccessor>();
+            return i.OnSend(new PerHttpRequestScopeInjector(httpAccessor), PipelineRelativePosition.Before,
+                typeof(Rebus.Pipeline.Send.AssignDefaultHeadersStep));
+        });
         
         services.Configure<MvcOptions>(o => o.Conventions.Add(new MvcEndpointRouteConvention(sagaFlowModule)));
         var manager = GetServiceFromCollection<ApplicationPartManager>(services);

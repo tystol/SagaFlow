@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Rebus.Messages;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
@@ -13,15 +14,13 @@ namespace SagaFlow.History;
 [StepDocumentation("Tracks incoming messages to record message and saga correlation ids.")]
 public class SagaFlowIncomingMessageTracker : IIncomingStep
 {
-    private readonly ISagaFlowActivityStore _activityStore;
-
-    public SagaFlowIncomingMessageTracker(ISagaFlowActivityStore activityStore)
-    {
-        _activityStore = activityStore;
-    }
-        
     public async Task Process(IncomingStepContext context, Func<Task> next)
     {
+        // TODO: work out how to do this if not using Rebus.ServiceProvider
+        var rebusMessageScope = context.Load<AsyncServiceScope?>() ?? context.Load<IServiceScope>() ??
+            throw new ArgumentException("Could not resolve the IServiceScope. Are you using Rebus.ServiceProvider?");
+        var activityReporter = rebusMessageScope.ServiceProvider.GetRequiredService<ISagaFlowActivityReporter>();
+        
         var message = context.Load<Message>();
         var messageId = message.Headers.GetValueOrDefault(Headers.MessageId);
 
@@ -38,11 +37,17 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
         var sagaInvokers = allHandlers.GetValueOrDefault(true);
         var correlationId = message.Headers.GetValueOrDefault(Headers.CorrelationId);
 
+        var transportMessage = context.Load<TransportMessage>() ?? throw new ArgumentException("Could not find a transport message in the current incoming step context");
+        if (transportMessage.Headers.TryGetValue(Headers.DeliveryCount, out var value) && int.TryParse(value, out var deliveryCount))
+        {
+            
+        }
+        
         if (messageInvokers != null)
         {
             foreach (var messageInvoker in messageInvokers)
             {
-                await _activityStore.RecordHandlerStarted(messageId, correlationId, message.Body, messageInvoker.Handler);
+                await activityReporter.RecordHandlerStarted(messageId, correlationId, message.Body, messageInvoker.Handler);
             }
         }
 
@@ -51,7 +56,7 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
             foreach (var sagaInvoker in sagaInvokers)
             {
                 var sagaId = sagaInvoker.GetSagaData().Id;
-                await _activityStore.RecordSagaStepStarted(messageId, correlationId, message.Body, sagaId, sagaInvoker.Saga);
+                await activityReporter.RecordSagaStepStarted(messageId, correlationId, message.Body, sagaId, sagaInvoker.Saga);
             }
         }
 
@@ -63,7 +68,7 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
             {
                 foreach (var messageInvoker in messageInvokers)
                 {
-                    await _activityStore.RecordHandlerFinished(messageId, correlationId, message.Body, messageInvoker.Handler, null);
+                    await activityReporter.RecordHandlerFinished(messageId, correlationId, message.Body, messageInvoker.Handler, null);
                 }
             }
 
@@ -72,7 +77,7 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
                 foreach (var sagaInvoker in sagaInvokers)
                 {
                     var sagaId = sagaInvoker.GetSagaData().Id;
-                    await _activityStore.RecordSagaStepFinished(messageId, correlationId, message.Body, sagaId, sagaInvoker.Saga, null, WasSagaMarkedComplete(sagaInvoker.Saga) );
+                    await activityReporter.RecordSagaStepFinished(messageId, correlationId, message.Body, sagaId, sagaInvoker.Saga, null, WasSagaMarkedComplete(sagaInvoker.Saga) );
                 }
             }
         }
@@ -82,7 +87,7 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
             {
                 foreach (var messageInvoker in messageInvokers)
                 {
-                    await _activityStore.RecordHandlerFinished(messageId, correlationId, message.Body, messageInvoker.Handler, ex);
+                    await activityReporter.RecordHandlerFinished(messageId, correlationId, message.Body, messageInvoker.Handler, ex);
                 }
             }
 
@@ -91,7 +96,7 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
                 foreach (var sagaInvoker in sagaInvokers)
                 {
                     var sagaId = sagaInvoker.GetSagaData().Id;
-                    await _activityStore.RecordSagaStepFinished(messageId, correlationId, message.Body, sagaId, sagaInvoker.Saga, ex, WasSagaMarkedComplete(sagaInvoker.Saga));
+                    await activityReporter.RecordSagaStepFinished(messageId, correlationId, message.Body, sagaId, sagaInvoker.Saga, ex, WasSagaMarkedComplete(sagaInvoker.Saga));
                 }
             }
             

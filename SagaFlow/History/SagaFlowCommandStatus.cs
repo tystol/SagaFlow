@@ -80,8 +80,6 @@ public class SagaFlowCommandStatus
     
     public DateTime? FinishDateTime { get; set; }
 
-    public IList<SagaState> Sagas { get; } = new List<SagaState>();
-    
     public int Attempt { get; set; }
     
     public double Progress { get; set; }
@@ -90,19 +88,6 @@ public class SagaFlowCommandStatus
     public string? StackTrace { get; set; }
 }
 
-public class SagaState
-{
-    public required SagaFlowSagaId SagaId { get; init; }
-    public SagaStatus Status { get; set; }
-}
-
-public enum SagaStatus
-{
-    Started,
-    Processing,
-    Completed,
-    Errored
-}
 
 public record PagedResult<TItem>(
     IEnumerable<TItem> Page,

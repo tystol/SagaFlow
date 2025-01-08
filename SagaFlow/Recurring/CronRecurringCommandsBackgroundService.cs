@@ -10,18 +10,21 @@ using NCrontab.Scheduler;
 
 namespace SagaFlow.Recurring;
 
-internal class CronRecurringCommandsBackgroundService : BackgroundService
+internal class CronRecurringCommandsBackgroundService : BackgroundService, IRecurringCommandScopeAccessor
 {
     private readonly SagaFlowModule sagaFlowModule;
-    private readonly IServiceProvider services;
+    private readonly IServiceProvider rootScope;
+    private readonly AsyncLocal<IServiceProvider?> currentCommandScope = new();
 
     public CronRecurringCommandsBackgroundService(
         SagaFlowModule sagaFlowModule,
-        IServiceProvider services)
+        IServiceProvider rootScope)
     {
         this.sagaFlowModule = sagaFlowModule;
-        this.services = services;
+        this.rootScope = rootScope;
     }
+
+    IServiceProvider? IRecurringCommandScopeAccessor.Scope => currentCommandScope.Value;
     
     // TODO:
     //  - Persistant storage mechanism
@@ -30,15 +33,18 @@ internal class CronRecurringCommandsBackgroundService : BackgroundService
     //    multiple instances triggering same job twice for same time, etc)
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var scheduler = new Scheduler(services.GetService<ILogger<Scheduler>>());
-        var bus = services.GetRequiredService<ISagaFlowCommandBus>();
+        using var schedulerScope = rootScope.CreateScope();
+        using var scheduler = new Scheduler(schedulerScope.ServiceProvider.GetService<ILogger<Scheduler>>());
+        var bus = schedulerScope.ServiceProvider.GetRequiredService<ISagaFlowCommandBus>();
 
         foreach (var command in sagaFlowModule.Commands.Where(c => c.IsRecurringCommand))
         {
-            scheduler.AddTask( CrontabSchedule.Parse(command.CronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true}), ct =>
+            scheduler.AddTask( CrontabSchedule.Parse(command.CronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = true}), async ct =>
             {
                 var commandMessage = Activator.CreateInstance(command.CommandType) ?? throw new ArgumentException($"Could not create instance of type {command.CommandType}");
-                return bus.Send(commandMessage);
+                currentCommandScope.Value = schedulerScope.ServiceProvider;
+                await bus.Send(commandMessage);
+                currentCommandScope.Value = null;
             });
         }
         await scheduler.StartAsync(stoppingToken);

@@ -10,12 +10,13 @@ using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
 using Rebus.Pipeline.Send;
 using Rebus.Sagas;
+using SagaFlow.Recurring;
 
 namespace SagaFlow.History;
 
 internal static class SagaFlowStatusConfiguration
 {
-    internal static RebusConfigurer ConfigureSagaFlowEventsForRebus(this RebusConfigurer configure, SagaFlowModule sagaFlowModule)
+    internal static RebusConfigurer ConfigureSagaFlowEventsForRebus(this RebusConfigurer configure, SagaFlowModule sagaFlowModule, Func<PipelineStepInjector,PipelineStepInjector>? pipelineAdditions)
     {
         return configure
             .Events(events =>
@@ -30,14 +31,20 @@ internal static class SagaFlowStatusConfiguration
                 opts.LogPipeline(verbose:true);
                 opts.Decorate<IPipeline>(c =>
                 {
-                    var sagaFlowActivityStore = sagaFlowModule.ServiceProvider.GetService<ISagaFlowActivityStore>() ??
-                        throw new InvalidOperationException("Could not resolve ISagaFlowActivityStore");
                     var pipeline = c.Get<IPipeline>();
-                    var sendStep = new SagaFlowOutgoingMessageTracker(sagaFlowActivityStore);
-                    var receiveStep = new SagaFlowIncomingMessageTracker(sagaFlowActivityStore);
-                    return new PipelineStepInjector(pipeline)
-                        .OnSend(sendStep, PipelineRelativePosition.Before, typeof(SendOutgoingMessageStep))
-                        .OnReceive(receiveStep, PipelineRelativePosition.Before, typeof(DispatchIncomingMessageStep));
+                    var sendMessageTracker = new SagaFlowOutgoingMessageTracker();
+                    var receiveMessageTracker = new SagaFlowIncomingMessageTracker();
+                    var scopeAccessor = sagaFlowModule.ServiceProvider.GetRequiredService<IRecurringCommandScopeAccessor>();
+                    var recurringCommandScopeInjector = new RecurringCommandScopeInjector(scopeAccessor);
+                    var pipelineInjector = new PipelineStepInjector(pipeline)
+                        .OnSend(recurringCommandScopeInjector, PipelineRelativePosition.Before, typeof(AssignDefaultHeadersStep))
+                        .OnSend(sendMessageTracker, PipelineRelativePosition.Before, typeof(SendOutgoingMessageStep))
+                        .OnReceive(receiveMessageTracker, PipelineRelativePosition.Before, typeof(DispatchIncomingMessageStep));
+
+                    if (pipelineAdditions != null)
+                        return pipelineAdditions(pipelineInjector);
+
+                    return pipelineInjector;
                 });
             });
     }
