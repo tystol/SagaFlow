@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Rebus.Pipeline;
 
@@ -19,35 +17,18 @@ public interface ISagaFlowCommandContext
 
 internal class SagaFlowRebusCommandContext : ISagaFlowCommandContext
 {
-    private readonly ISagaFlowCommandStatusService _sagaFlowCommandStatusService;
-    private readonly IEnumerable<ISagaFlowCommandStateChangedHandler> _updateHandlers;
+    private readonly ISagaFlowActivityReporter sagaFlowActivityReporter;
 
-    public SagaFlowRebusCommandContext(
-        ISagaFlowCommandStatusService sagaFlowCommandStatusService, 
-        IEnumerable<ISagaFlowCommandStateChangedHandler> updateHandlers)
+    public SagaFlowRebusCommandContext(ISagaFlowActivityReporter sagaFlowActivityReporter)
     {
-        _sagaFlowCommandStatusService = sagaFlowCommandStatusService;
-        _updateHandlers = updateHandlers;
+        this.sagaFlowActivityReporter = sagaFlowActivityReporter;
     }
     
-    public async Task UpdateProgress(double progress)
+    public Task UpdateProgress(double progress)
     {
         if (progress < 0 || progress > 100) throw new ArgumentException("Progress must be a value between 0 and 100");
-        
-        var updatedSagaFlowCommand = await _sagaFlowCommandStatusService.UpdateProgress(
-            MessageContext.Current.Headers[SagaFlowRebusEvents.SagaFlowCommandId],
-            progress);
-
-        await PublishSagaFlowCommandStateChanged(updatedSagaFlowCommand);
-    }
-
-    private async Task PublishSagaFlowCommandStateChanged(SagaFlowCommandStatus updatedSagaFlowCommandStatus)
-    {
-        await Task.WhenAll(
-            _updateHandlers.Select(
-                handler => handler.HandleSagaFlowCommandStatusUpdate(updatedSagaFlowCommandStatus)
-            )
-        );
+        var commandId = MessageContext.Current.Headers[Headers.SagaFlowCommandId];
+        return sagaFlowActivityReporter.RecordCommandProgress(commandId, progress);
     }
 }
 

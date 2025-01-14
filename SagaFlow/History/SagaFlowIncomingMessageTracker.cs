@@ -22,7 +22,7 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
         var activityReporter = rebusMessageScope.ServiceProvider.GetRequiredService<ISagaFlowActivityReporter>();
         
         var message = context.Load<Message>();
-        var messageId = message.Headers.GetValueOrDefault(Headers.MessageId);
+        var messageId = message.Headers.GetValueOrDefault(Rebus.Messages.Headers.MessageId);
 
         if (messageId == null)
         {
@@ -35,12 +35,13 @@ public class SagaFlowIncomingMessageTracker : IIncomingStep
             .ToDictionary(g => g.Key, g => g.ToList());
         var messageInvokers = allHandlers.GetValueOrDefault(false);
         var sagaInvokers = allHandlers.GetValueOrDefault(true);
-        var correlationId = message.Headers.GetValueOrDefault(Headers.CorrelationId);
+        var correlationId = message.Headers.GetValueOrDefault(Rebus.Messages.Headers.CorrelationId);
 
         var transportMessage = context.Load<TransportMessage>() ?? throw new ArgumentException("Could not find a transport message in the current incoming step context");
-        if (transportMessage.Headers.TryGetValue(Headers.DeliveryCount, out var value) && int.TryParse(value, out var deliveryCount))
+        if (transportMessage.Headers.TryGetValue(Rebus.Messages.Headers.DeliveryCount, out var value) && int.TryParse(value, out var deliveryCount))
         {
-            
+            // TODO: this doesnt seem to be reliably populated (I think dependant on transport layer) so maybe add our
+            // own command attempt counter?
         }
         
         if (messageInvokers != null)

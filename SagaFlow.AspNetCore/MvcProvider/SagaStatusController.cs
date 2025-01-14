@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SagaFlow.AspNetCore.Formatters;
 using SagaFlow.History;
 
 namespace SagaFlow.MvcProvider;
@@ -8,17 +7,16 @@ namespace SagaFlow.MvcProvider;
 [Route("[sagaflow-base-path]/sagas")]
 public class SagaStatusController : ControllerBase
 {
-    private readonly ISagaFlowCommandStore _sagaFlowCommandStore;
+    private readonly ISagaFlowActivityStore activityStore;
 
-    public SagaStatusController(
-        ISagaFlowCommandStore sagaFlowCommandStore)
+    public SagaStatusController(ISagaFlowActivityStore activityStore)
     {
-        _sagaFlowCommandStore = sagaFlowCommandStore;
+        this.activityStore = activityStore;
     }
     
-    [HttpGet]
-    public async Task<PagedResult<SagaFlowCommandStatus>> Get(int pageIndex = 0, int pageSize = 20, string? keyword = null)
+    [HttpGet("{id}")]
+    public async Task<PagedResult<SagaFlowCommandStatus>> Get(string id)
     {
-        return await _sagaFlowCommandStore.GetCommands(pageIndex, pageSize, keyword);
+        throw new NotImplementedException();
     }
 }

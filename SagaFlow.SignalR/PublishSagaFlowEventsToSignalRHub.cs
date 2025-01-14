@@ -4,11 +4,11 @@ using SagaFlow.History;
 
 namespace SagaFlow.SignalR;
 
-public class PublishSagaFlowCommandStateChangeToSignalRHub : ISagaFlowCommandStateChangedHandler, ISagaFlowCommandSucceededHandler, ISagaFlowCommandErroredHandler
+public class PublishSagaFlowEventsToSignalRHub : ISagaFlowEventHandler
 {
     private readonly IHubContext<SagaFlowSignalRHub, ISagaFlowSignalRHub> _hub;
 
-    public PublishSagaFlowCommandStateChangeToSignalRHub(IHubContext<SagaFlowSignalRHub, ISagaFlowSignalRHub> hub)
+    public PublishSagaFlowEventsToSignalRHub(IHubContext<SagaFlowSignalRHub, ISagaFlowSignalRHub> hub)
     {
         _hub = hub;
     }
@@ -26,5 +26,10 @@ public class PublishSagaFlowCommandStateChangeToSignalRHub : ISagaFlowCommandSta
     public async Task HandleSagaFlowCommandErrored(SagaFlowCommandStatus sagaFlowCommandStatus)
     {
         await _hub.Clients.All.SendCommandErrored(sagaFlowCommandStatus);
+    }
+
+    public async Task ProgressChanged(SagaFlowCommandId commandId, double progress)
+    {
+        await _hub.Clients.All.SendCommandProgress(new CommandProgressMessage(commandId, progress));
     }
 }

@@ -24,8 +24,8 @@ public class RebusCommandBus : ISagaFlowCommandBus
     public async Task Send(object command)
     {
         var commandId = new SagaFlowCommandId(Guid.NewGuid());
-        var headers = new Dictionary<string, string> {{SagaFlowRebusEvents.SagaFlowCommandId, commandId}};
-        // TODO: mark command as scheduled/recurring
+        var headers = new Dictionary<string, string> {{Headers.SagaFlowCommandId, commandId}};
+        // TODO: mark command as explicit action vs scheduled/recurring
         await _activityReporter.RecordCommandInitiated(commandId, command);
         await rebus.Send(command, headers);
         // TODO: Offer config over whether to send commands as a direct message or publish as event?

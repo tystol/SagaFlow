@@ -74,7 +74,7 @@ public class SagaFlowCommandStatus
     
     public ReadOnlyDictionary<string, string> HumanReadableCommandPropertyValues { get; init; }
     
-    public string InitiatingUser { get; init; }
+    public string? InitiatingUser { get; init; }
     
     public DateTime StartDateTime { get; init; }
     

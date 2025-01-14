@@ -22,7 +22,7 @@ public class SagaFlowOutgoingMessageTracker : IOutgoingStep
             throw new ArgumentException("Could not resolve the IServiceProvider. Are you using Rebus.ServiceProvider?");
         var activityReporter = rebusMessageScope.GetRequiredService<ISagaFlowActivityReporter>();
         var message = context.Load<Message>();
-        var messageId = message.Headers.GetValueOrDefault(Headers.MessageId);
+        var messageId = message.Headers.GetValueOrDefault(Rebus.Messages.Headers.MessageId);
 
         if (messageId == null)
         {
@@ -31,9 +31,9 @@ public class SagaFlowOutgoingMessageTracker : IOutgoingStep
         }
 
         // Not every message will be a SagaFlow command.
-        var commandIdString = message.Headers.GetValueOrDefault(SagaFlowRebusEvents.SagaFlowCommandId);
+        var commandIdString = message.Headers.GetValueOrDefault(Headers.SagaFlowCommandId);
         SagaFlowCommandId? commandId = commandIdString != null ? new SagaFlowCommandId(Guid.Parse(commandIdString)) : null;
-        var correlationId = message.Headers.GetValueOrDefault(Headers.CorrelationId);
+        var correlationId = message.Headers.GetValueOrDefault(Rebus.Messages.Headers.CorrelationId);
 
         await activityReporter.RecordMessageSent(messageId, commandId, correlationId, message.Body);
 

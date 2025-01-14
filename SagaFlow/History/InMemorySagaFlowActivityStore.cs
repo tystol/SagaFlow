@@ -12,14 +12,17 @@ public class InMemorySagaFlowActivityStore : ISagaFlowActivityReporter, ISagaFlo
 {
     private readonly IUsernameProvider _identityProvider;
     private readonly ISagaFlowTime _sagaFlowTime;
+    private readonly IEnumerable<ISagaFlowEventHandler> _eventHandlers;
+    
     private static readonly ConcurrentDictionary<SagaFlowCommandId, SagaFlowCommandState> Commands = new();
     private static readonly ConcurrentDictionary<SagaFlowMessageId, SagaFlowMessageState> Messages = new();
     private static readonly ConcurrentDictionary<SagaFlowSagaId, SagaFlowSagaState> Sagas = new();
 
-    public InMemorySagaFlowActivityStore(IUsernameProvider identityProvider, ISagaFlowTime sagaFlowTime)
+    public InMemorySagaFlowActivityStore(IUsernameProvider identityProvider, ISagaFlowTime sagaFlowTime, IEnumerable<ISagaFlowEventHandler> eventHandlers)
     {
         _identityProvider = identityProvider;
         _sagaFlowTime = sagaFlowTime;
+        _eventHandlers = eventHandlers;
     }
     
     public Task RecordCommandInitiated(SagaFlowCommandId commandId, object commandMessage)
@@ -97,6 +100,7 @@ public class InMemorySagaFlowActivityStore : ISagaFlowActivityReporter, ISagaFlo
                 // TODO: track retries and only progress to Failed once retry limit reached.
                 handlerState.Status = error == null ? HandlerStatus.Complete : HandlerStatus.Failed;
                 handlerState.Error = error;
+                handlerState.CompletionTime = _sagaFlowTime.Now;
             }
         }
         
@@ -148,14 +152,31 @@ public class InMemorySagaFlowActivityStore : ISagaFlowActivityReporter, ISagaFlo
         sagaState.Status = sagaFinished ? 
             sagaState.Errors.Count == 0 ? SagaStatus.Complete : SagaStatus.CompleteWithErrors : 
             sagaState.Errors.Count == 0 ? SagaStatus.Running : SagaStatus.RunningWithErrors;
+
+        if (sagaFinished)
+            sagaState.CompletionTime = _sagaFlowTime.Now;
         
         return Task.CompletedTask;
     }
-    
+
+    public async Task RecordCommandProgress(SagaFlowCommandId commandId, double progress)
+    {
+        if (!Commands.TryGetValue(commandId, out var command))
+            throw new ArgumentException($"A command with id {commandId} does not exists.");
+
+        command.Progress = progress;
+        
+        // TODO: Refactor this - InMemoryActivityStore shouldn't be responsible for raising core SagaFlow events.
+        foreach (var handler in _eventHandlers)
+        {
+            await handler.ProgressChanged(commandId, progress);
+        }
+    }
+
     public Task<PagedResult<SagaFlowCommandStatus>> GetCommandHistory<T>(int pageIndex, int pageSize)
     {
         var query = Commands.Values
-            .AsQueryable()
+            .AsEnumerable()
             .Where(command => command.CommandType == typeof(T));
         
         var total = query.Count();
@@ -166,7 +187,12 @@ public class InMemorySagaFlowActivityStore : ISagaFlowActivityReporter, ISagaFlo
             .Select( s => new SagaFlowCommandStatus
             {
                 SagaFlowCommandId = s.CommandId,
-                
+                CommandType = s.CommandType.ToString(),
+                Command = s.CommandBody,
+                InitiatingUser = s.InitiatingUser,
+                StartDateTime = s.StartTime.UtcDateTime,
+                FinishDateTime = s.GetCompletionTime()?.UtcDateTime,
+                Progress = s.Progress,
             });
 
         return Task.FromResult(new PagedResult<SagaFlowCommandStatus>(
@@ -179,18 +205,42 @@ public class InMemorySagaFlowActivityStore : ISagaFlowActivityReporter, ISagaFlo
 
 public class SagaFlowCommandState
 {
+    private double? progress;
+    
     public SagaFlowCommandId CommandId { get; init; }
     public Type CommandType { get; init; }
     public object CommandBody { get; init; }
     public string? InitiatingUser { get; init; }
     public DateTimeOffset StartTime { get; init; }
 
+    public double Progress
+    {
+        get
+        {
+            if (progress != null) return progress.Value;
+            if (HandlerStates.Count == 0) return 0;
+            return HandlerStates.Count(h => h.CompletionTime != null) / (double) HandlerStates.Count;
+        }
+        set => progress = value;
+    }
     
     public SagaFlowMessageId MessageId { get; set; }
 
     public List<SagaFlowHandlerState> HandlerStates { get; } = new();
 
     public Dictionary<SagaFlowSagaId,SagaFlowSagaState> SagaStates { get; } = new();
+
+    public DateTimeOffset? GetCompletionTime()
+    {
+        if (HandlerStates.All(h => h.CompletionTime != null) && SagaStates.Values.All(s => s.CompletionTime != null))
+        {
+            var handlerMax = HandlerStates.Count > 0 ? HandlerStates.Max(h => h.CompletionTime) : null;
+            var sagaMax = SagaStates.Count > 0 ? SagaStates.Values.Max(h => h.CompletionTime) : null;
+            return sagaMax == null || handlerMax > sagaMax ? handlerMax : sagaMax;
+        }
+
+        return null;
+    }
 }
 
 public class SagaFlowMessageState
@@ -215,6 +265,7 @@ public class SagaFlowHandlerState
     public Type HandlerType { get; init; }
     public HandlerStatus Status { get; set; }
     public Exception? Error { get; set; }
+    public DateTimeOffset? CompletionTime { get; set; }
 }
 
 public enum SagaStatus
@@ -230,6 +281,7 @@ public class SagaFlowSagaState
     public SagaFlowSagaId SagaId { get; init; }
     public Type SagaType { get; init; }
     public SagaStatus Status { get; set; }
+    public DateTimeOffset? CompletionTime { get; set; }
     public List<Exception> Errors { get; } = [];
     public List<SagaFlowMessageState> Messages { get; } = [];
 }

@@ -75,54 +75,6 @@ namespace SagaFlow
             return this;
         }
 
-        /// <summary>
-        /// Adds a custom implementation of TCommandStatusStore to replace the default In-memory implementation.
-        /// </summary>
-        /// <typeparam name="TCommandStatusStore"></typeparam>
-        /// <returns></returns>
-        public SagaFlowOptions WithCustomCommandStatusStore<TCommandStatusStore>() where TCommandStatusStore : class, ISagaFlowCommandStore
-        {
-            HandlerSetup.Add((s) => s.AddTransient<ISagaFlowCommandStore, TCommandStatusStore>());
-
-            return this;
-        }
-        
-        /// <summary>
-        /// Adds a custom handler when the command status has been updated
-        /// </summary>
-        /// <typeparam name="TCommandStatusChangedHandler"></typeparam>
-        /// <returns></returns>
-        public SagaFlowOptions AddCustomCommandStatusChangedHandler<TCommandStatusChangedHandler>() where TCommandStatusChangedHandler : class, ISagaFlowCommandStateChangedHandler
-        {
-            HandlerSetup.Add((s) => s.AddTransient<ISagaFlowCommandStateChangedHandler, TCommandStatusChangedHandler>());
-
-            return this;
-        }
-        
-        /// <summary>
-        /// Adds a custom handler when a command has succeeded.
-        /// </summary>
-        /// <typeparam name="TSagaFlowCommandSucceededHandler"></typeparam>
-        /// <returns></returns>
-        public SagaFlowOptions AddCustomCommandSucceededHandler<TSagaFlowCommandSucceededHandler>() where TSagaFlowCommandSucceededHandler : class, ISagaFlowCommandSucceededHandler
-        {
-            HandlerSetup.Add((s) => s.AddTransient<ISagaFlowCommandSucceededHandler, TSagaFlowCommandSucceededHandler>());
-
-            return this;
-        }
-        
-        /// <summary>
-        /// Adds a customer handler when a command has errored
-        /// </summary>
-        /// <typeparam name="TSagaFlowCommandErroredHandler"></typeparam>
-        /// <returns></returns>
-        public SagaFlowOptions AddCustomCommandErroredHandler<TSagaFlowCommandErroredHandler>() where TSagaFlowCommandErroredHandler : class, ISagaFlowCommandErroredHandler
-        {
-            HandlerSetup.Add((s) => s.AddTransient<ISagaFlowCommandErroredHandler, TSagaFlowCommandErroredHandler>());
-
-            return this;
-        }
-
         public SagaFlowOptions AddHandlersFromAssemblyOf<T>()
         {
             HandlerSetup.Add(services => services.AutoRegisterHandlersFromAssemblyOf<T>());

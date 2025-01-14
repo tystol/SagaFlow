@@ -25,4 +25,6 @@ public interface ISagaFlowActivityReporter
     Task RecordSagaStepStarted(SagaFlowMessageId messageId, string? correlationId, object message, SagaFlowSagaId sagaId, object saga);
 
     Task RecordSagaStepFinished(SagaFlowMessageId messageId, string? correlationId, object message, SagaFlowSagaId sagaId, object saga, Exception? error, bool sagaFinished);
+
+    Task RecordCommandProgress(SagaFlowCommandId commandId, double progress);
 }

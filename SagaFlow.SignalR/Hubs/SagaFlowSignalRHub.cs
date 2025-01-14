@@ -5,6 +5,7 @@ namespace SagaFlow.SignalR.Hubs;
 
 public interface ISagaFlowSignalRHub
 {
+    Task SendCommandProgress(CommandProgressMessage commandProgress);
     Task SendCommandStatusUpdate(SagaFlowCommandStatus commandStatus);
     
     Task SendCommandSucceeded(SagaFlowCommandStatus commandStatus);
@@ -14,6 +15,11 @@ public interface ISagaFlowSignalRHub
 
 public class SagaFlowSignalRHub : Hub<ISagaFlowSignalRHub>
 {
+    public async Task SendCommandProgress(CommandProgressMessage message)
+    {
+        await Clients.All.SendCommandProgress(message);
+    }
+    
     public async Task SendCommandStatusUpdate(SagaFlowCommandStatus commandStatus)
     {
         await Clients.All.SendCommandStatusUpdate(commandStatus);
@@ -29,3 +35,5 @@ public class SagaFlowSignalRHub : Hub<ISagaFlowSignalRHub>
         await Clients.All.SendCommandErrored(commandStatus);
     }
 }
+
+public record CommandProgressMessage(SagaFlowCommandId CommandId, double Progress);
