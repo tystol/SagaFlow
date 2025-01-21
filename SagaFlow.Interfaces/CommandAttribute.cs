@@ -23,9 +23,12 @@ namespace SagaFlow.Interfaces
         /// </summary>
         public string Cron { get; set; }
         
+        // TODO: Rename NameTemplate to Summary? ie. a command has a Name (non-templatable) and a Summary (which is templatable) 
         /// <summary>
-        /// Optional property template to resolve a running name of a template.
+        /// Optional property template to resolve a running name of a command. Use {CommandProperty} syntax to define
+        /// the command's values to inject into the final string.
         /// </summary>
+        /// <example>Hello, my name is {Name} and I'm turning the server {RequestedPowerState}.</example>
         public string NameTemplate { get; set; }
     }
 }

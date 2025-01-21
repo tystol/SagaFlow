@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SagaFlow.Schema;
 
 namespace SagaFlow.MvcProvider
@@ -29,6 +25,7 @@ namespace SagaFlow.MvcProvider
                     .ToDictionary(r => r.Id, r => new ResourceListDefinition
                     {
                         Name = r.Name,
+                        Description = null, // TODO: Add descriptions for resource lists?
                         Href = r.ListingRouteTemplate,
                         Schema = r.ResourceSchema
                             .ToDictionary(rs => rs.PropertyInfo.Name.ToCamelCase(), rs => new ResourcePropertySchema
@@ -61,7 +58,7 @@ namespace SagaFlow.MvcProvider
             return Task.FromResult(result);
         }
 
-        private static string GetSchemaType(Type type, ResourceProvider resourceProvider = null)
+        private static string GetSchemaType(Type type, ResourceProvider? resourceProvider = null)
         {
             // TODO: better handling of multiselect
             if (type != typeof(String))
@@ -91,10 +88,10 @@ namespace SagaFlow.MvcProvider
 
     public class ResourceListDefinition : ISchemaDefinition<ResourcePropertySchema>
     {
-        public string Name { get; set; }
-        public string Description { get; set; } // TODO: populate descriptions for resource lists (tooltip in UI)
-        public string Href { get; set; }
-        public IDictionary<string,ResourcePropertySchema> Schema { get; set; }
+        public required string Name { get; init; }
+        public required string? Description { get; init; } // TODO: populate descriptions for resource lists (tooltip in UI)
+        public required string Href { get; init; }
+        public required IDictionary<string,ResourcePropertySchema> Schema { get; init; }
     }
 
     public interface IPropertySchema
@@ -104,27 +101,27 @@ namespace SagaFlow.MvcProvider
 
     public class ResourcePropertySchema : IPropertySchema
     {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public bool IsIdKey { get; set; }
-        public bool IsTitleKey { get; set; }
+        public required string Name { get; init; }
+        public required string Type { get; init; }
+        public required bool IsIdKey { get; init; }
+        public required bool IsTitleKey { get; init; }
     }
 
     public class CommandDefinition : ISchemaDefinition<ParameterDefinition>
     {
-        public string Name { get; init; }
-        public string Description { get; init; }
-        public string Href { get; init; }
-        public IDictionary<string,ParameterDefinition> Schema { get; init; }
+        public required string Name { get; init; }
+        public required string Description { get; init; }
+        public required string Href { get; init; }
+        public required IDictionary<string,ParameterDefinition> Schema { get; init; }
     }
 
     public class ParameterDefinition : IPropertySchema
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool Required { get; set; }
-        public string Type { get; set; } // TODO: proper type system to handle resource list inputs
-        public bool Multiselect { get; set; }
-        public string ResourceListId { get; set; }
+        public required string Name { get; init; }
+        public required string Description { get; set; }
+        public required bool Required { get; init; }
+        public required string Type { get; init; } // TODO: proper type system to handle resource list inputs
+        public required bool Multiselect { get; init; }
+        public required string? ResourceListId { get; init; }
     }
 }

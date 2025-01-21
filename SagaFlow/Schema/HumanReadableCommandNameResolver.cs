@@ -17,18 +17,13 @@ internal class HumanReadableCommandNameResolver : IHumanReadableCommandNameResol
 {
     private readonly IHumanReadableCommandPropertiesResolver _propertiesResolver;
     private readonly SagaFlowModule _sagaFlowModule;
-    private readonly IServiceProvider _serviceProvider;
 
     private static readonly Regex TemplateRegex = new Regex("[^{}]*{([^{}]+)}[^{}]*");
 
-    public HumanReadableCommandNameResolver(
-        IHumanReadableCommandPropertiesResolver propertiesResolver,
-        SagaFlowModule sagaFlowModule,
-        IServiceProvider serviceProvider)
+    public HumanReadableCommandNameResolver(IHumanReadableCommandPropertiesResolver propertiesResolver, SagaFlowModule sagaFlowModule)
     {
         _propertiesResolver = propertiesResolver;
         _sagaFlowModule = sagaFlowModule;
-        _serviceProvider = serviceProvider;
     }
 
     public bool IsCommand(object message)

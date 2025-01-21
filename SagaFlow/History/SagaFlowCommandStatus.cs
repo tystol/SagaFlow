@@ -51,7 +51,7 @@ public record SagaFlowSagaId(Guid Value)
 
 public enum CommandStatus
 {
-    Started,
+    Sent,
     Processing,
     Completed,
     Errored
@@ -61,7 +61,7 @@ public class SagaFlowCommandStatus
 {
     public SagaFlowCommandId SagaFlowCommandId { get; init; }
 
-    public CommandStatus Status { get; set; } = CommandStatus.Started;
+    public CommandStatus Status { get; set; } = CommandStatus.Sent;
     
     public string Name { get; init; }
     
@@ -69,10 +69,6 @@ public class SagaFlowCommandStatus
     
     public string CommandType { get; init; }
     public object Command { get; init; }
-    
-    public string CommandArgs { get; init; }
-    
-    public ReadOnlyDictionary<string, string> HumanReadableCommandPropertyValues { get; init; }
     
     public string? InitiatingUser { get; init; }
     
@@ -86,7 +82,14 @@ public class SagaFlowCommandStatus
 
     public string? LastError { get; set; }
     public string? StackTrace { get; set; }
+    
+    public List<CommandHandlerStatusSummary> Handlers { get; init; }
+    public List<SagaStatusSummary> RelatedSagas { get; init; }
 }
+
+public record CommandHandlerStatusSummary(string Name, HandlerStatus Status, DateTime StartTime);
+
+public record SagaStatusSummary(SagaFlowSagaId SagaId, SagaStatus Status, DateTime StartTime);
 
 
 public record PagedResult<TItem>(

@@ -1,8 +1,5 @@
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Rebus.Bus;
-using Rebus.Messages;
 using SagaFlow.AspNetCore.Formatters;
 using SagaFlow.History;
 
@@ -16,13 +13,11 @@ namespace SagaFlow.MvcProvider
     {
         private readonly ISagaFlowActivityStore activityStore;
         private readonly ISagaFlowCommandBus commandBus;
-        private readonly IServiceProvider _scope;
 
-        public CommandController(ISagaFlowActivityStore activityStore, ISagaFlowCommandBus commandBus, IServiceProvider scope)
+        public CommandController(ISagaFlowActivityStore activityStore, ISagaFlowCommandBus commandBus)
         {
             this.activityStore = activityStore;
             this.commandBus = commandBus;
-            _scope = scope;
         }
 
         [HttpGet]
@@ -39,9 +34,7 @@ namespace SagaFlow.MvcProvider
                     Name = c.Name,
                     CommandName = c.CommandName,
                     CommandType = c.CommandType,
-                    CommandArgs = c.CommandArgs,
-                    Command = (T) c.Command, // TODO - send command snapshot
-                    HumanReadableCommandPropertyValues = c.HumanReadableCommandPropertyValues,
+                    Command = (T) c.Command,
                     InitiatingUser = c.InitiatingUser,
                     StartDateTime = c.StartDateTime,
                     FinishDateTime = c.FinishDateTime,
@@ -49,6 +42,8 @@ namespace SagaFlow.MvcProvider
                     Progress = c.Progress,
                     LastError = c.LastError,
                     StackTrace = c.StackTrace,
+                    Handlers = c.Handlers,
+                    RelatedSagas = c.RelatedSagas,
                 }),
                 Page = page,
                 PageSize = pageSize,
@@ -66,11 +61,11 @@ namespace SagaFlow.MvcProvider
         }
     }
 
-    public class CommandHistory<T>
+    public record CommandHistory<T>
     {
         public SagaFlowCommandId Id { get; init; }
 
-        public CommandStatus Status { get; set; } = CommandStatus.Started;
+        public CommandStatus Status { get; init; } = CommandStatus.Sent;
     
         public string Name { get; init; }
     
@@ -78,12 +73,9 @@ namespace SagaFlow.MvcProvider
     
         public string CommandType { get; init; }
     
-        public string CommandArgs { get; init; }
         public T Command { get; init; }
     
-        public ReadOnlyDictionary<string, string> HumanReadableCommandPropertyValues { get; init; }
-    
-        public string InitiatingUser { get; init; }
+        public string? InitiatingUser { get; init; }
     
         public DateTime StartDateTime { get; init; }
     
@@ -93,7 +85,9 @@ namespace SagaFlow.MvcProvider
     
         public double Progress { get; set; }
 
-        public string LastError { get; set; } = null;
-        public string StackTrace { get; set; } = null;
+        public string? LastError { get; set; } = null;
+        public string? StackTrace { get; set; } = null;
+        public List<CommandHandlerStatusSummary> Handlers { get; set; }
+        public List<SagaStatusSummary> RelatedSagas { get; set; }
     }
 }
