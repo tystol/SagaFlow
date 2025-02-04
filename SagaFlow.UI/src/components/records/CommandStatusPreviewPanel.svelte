@@ -5,6 +5,7 @@
     import CopyIcon from "@/components/base/CopyIcon.svelte";
     import FormattedDate from "@/components/base/FormattedDate.svelte";
     import RecordFieldValue from "@/components/records/RecordFieldValue.svelte";
+    import Accordion from "@/components/base/Accordion.svelte";
 
     export let collection;
 
@@ -65,6 +66,8 @@
         <h4><strong>{collection?.name}</strong> status</h4>
     </svelte:fragment>
 
+    <h4 class="section-title">Command</h4>
+
     <table class="table-border preview-table" class:table-loading={isLoading}>
         <tbody>
             <tr>
@@ -101,6 +104,69 @@
             {/if}
         </tbody>
     </table>
+
+    {#if record.handlers?.length > 0}
+    <br />
+    <h4 class="section-title">Handlers</h4>
+
+    <div class="accordions">
+        {#each record.handlers as commandHandler}
+        <Accordion single>
+            <svelte:fragment slot="header">
+                <div class="inline-flex">
+                    <i class="ri-user-star-line" />
+                    <span class="txt">{commandHandler.name}</span>
+                </div>
+
+                <div class="flex-fill" />
+                <span class="label" class:label-success={commandHandler.status === "Complete"}>{commandHandler.status}</span>
+                {#if commandHandler.errors?.length > 0}
+                    <i
+                        class="ri-error-warning-fill txt-danger"
+                        transition:scale={{ duration: 150, start: 0.7 }}
+                        use:tooltip={{ text: "Has errors", position: "left" }}
+                    />
+                {/if}
+            </svelte:fragment>
+
+            <pre>{JSON.stringify(commandHandler, undefined, 2)}</pre>
+        </Accordion>
+        {/each}
+    </div>
+    {/if}
+
+    {#if record.relatedSagas?.length > 0}
+    <br />
+    <h4 class="section-title">Sagas</h4>
+
+    <div class="accordions">
+        {#each record.relatedSagas as saga}
+        <Accordion single>
+            <svelte:fragment slot="header">
+                <div class="inline-flex">
+                    <i class="ri-user-star-line" />
+                    <span class="txt">{saga.name}</span>
+                </div>
+
+                <div class="flex-fill" />
+                <span class="label" class:label-success={saga.status === "Complete"}>{saga.status}</span>
+                {#if saga.errors?.length > 0}
+                    <i
+                        class="ri-error-warning-fill txt-danger"
+                        transition:scale={{ duration: 150, start: 0.7 }}
+                        use:tooltip={{ text: "Has errors", position: "left" }}
+                    />
+                {/if}
+            </svelte:fragment>
+
+            <pre>{JSON.stringify(saga, undefined, 2)}</pre>
+        </Accordion>
+        {/each}
+    </div>
+    {/if}
+    
+
+    <br />
     <pre>{JSON.stringify(record, undefined, 2)}</pre>
 
     <svelte:fragment slot="footer">

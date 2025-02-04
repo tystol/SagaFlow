@@ -228,6 +228,7 @@ public class InMemorySagaFlowActivityStore : ISagaFlowActivityReporter, ISagaFlo
                 RelatedSagas = cs.SagaStates.Values
                     .Select(ss => new SagaStatusSummary
                     (
+                        ss.SagaType.Name, // TODO: Provide attribute/customized saga naming
                         ss.SagaId,
                         ss.Status,
                         ss.StartTime.UtcDateTime

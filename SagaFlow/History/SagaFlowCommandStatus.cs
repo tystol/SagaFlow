@@ -1,53 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace SagaFlow.History;
-
-public record SagaFlowMessageId(Guid Value)
-{
-    public SagaFlowMessageId() : this(Guid.NewGuid())
-    { }
-
-    public override string ToString()
-    {
-        return Value.ToString();
-    }
-    
-    public static implicit operator string(SagaFlowMessageId id) => id.ToString();
-    public static implicit operator SagaFlowMessageId(string value) => new(Guid.Parse(value));
-    public static implicit operator SagaFlowMessageId(Guid value) => new(value);
-}
-
-public record SagaFlowCommandId(Guid Value)
-{
-    public SagaFlowCommandId() : this(Guid.NewGuid())
-    { }
-
-    public override string ToString()
-    {
-        return Value.ToString();
-    }
-    
-    public static implicit operator string(SagaFlowCommandId id) => id.ToString();
-    public static implicit operator SagaFlowCommandId(string value) => new(Guid.Parse(value));
-    public static implicit operator SagaFlowCommandId(Guid value) => new(value);
-}
-
-public record SagaFlowSagaId(Guid Value)
-{
-    public SagaFlowSagaId() : this(Guid.NewGuid())
-    { }
-
-    public override string ToString()
-    {
-        return Value.ToString();
-    }
-    
-    public static implicit operator string(SagaFlowSagaId id) => id.ToString();
-    public static implicit operator SagaFlowSagaId(string value) => new(Guid.Parse(value));
-    public static implicit operator SagaFlowSagaId(Guid value) => new(value);
-}
 
 public enum CommandStatus
 {
@@ -89,7 +43,7 @@ public class SagaFlowCommandStatus
 
 public record CommandHandlerStatusSummary(string Name, HandlerStatus Status, DateTime StartTime);
 
-public record SagaStatusSummary(SagaFlowSagaId SagaId, SagaStatus Status, DateTime StartTime);
+public record SagaStatusSummary(string Name, SagaFlowSagaId SagaId, SagaStatus Status, DateTime StartTime);
 
 
 public record PagedResult<TItem>(
