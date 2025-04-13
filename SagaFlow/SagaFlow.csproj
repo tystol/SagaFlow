@@ -36,8 +36,6 @@
   <ItemGroup>
     <None Remove="UI\index.html" />
     <EmbeddedResource Include="UI\index.html" />
-    <None Remove="UI\web-components.js" />
-    <EmbeddedResource Include="UI\web-components.js" />
   </ItemGroup>
   
   <ItemGroup>
@@ -57,6 +55,5 @@
 
   <Target Name="BuildSagaFlowUI" AfterTargets="ResolveProjectReferences" Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
     <Copy SourceFiles="..\SagaFlow.UI\dist\index.html" DestinationFolder="UI\" />
-    <Copy SourceFiles="..\SagaFlow.UI\dist-web-components\web-components.js" DestinationFolder="UI\" />
   </Target>
 </Project>
