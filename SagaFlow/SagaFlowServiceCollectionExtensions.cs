@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,38 +37,42 @@ public static class SagaFlowServiceCollectionExtensions
 
         // Configure and register Rebus
         services.AddRebus(c =>
-            {
-                // TODO split saga client vs host, similar to this:
-                // https://github.com/rebus-org/RebusSamples/blob/1e18159f39bdce3f7a36dff022750908f602d7b5/Sagas/Common/CommonRebusConfigurationExtensions.cs#L10
+        {
+            // TODO split saga client vs host, similar to this:
+            // https://github.com/rebus-org/RebusSamples/blob/1e18159f39bdce3f7a36dff022750908f602d7b5/Sagas/Common/CommonRebusConfigurationExtensions.cs#L10
 
-                if (options.OptionsConfigurer != null)
-                    c = c.Options(options.OptionsConfigurer);
-                
-                if (options.LoggingConfigurer != null)
-                    c = c.Logging(options.LoggingConfigurer);
+            if (options.OptionsConfigurer != null)
+                c = c.Options(options.OptionsConfigurer);
 
-                c = c.Transport(options.TransportConfigurer);
+            if (options.LoggingConfigurer != null)
+                c = c.Logging(options.LoggingConfigurer);
 
-                if (options.RoutingConfigurer == null)
-                    c = c.Routing(r => r.TypeBased().MapFallback("sagaflow.messages"));
-                else
-                    c = c.Routing(options.RoutingConfigurer);
+            c = c.Transport(options.TransportConfigurer);
 
-                if (options.SubscriptionConfigurer != null)
-                    c = c.Subscriptions(options.SubscriptionConfigurer);
-                if (options.SagaConfigurer != null)
-                    c = c.Sagas(options.SagaConfigurer);
-                if (options.TimeoutConfigurer != null)
-                    c = c.Timeouts(options.TimeoutConfigurer);
+            if (options.RoutingConfigurer == null)
+                c = c.Routing(r => r.TypeBased().MapFallback("sagaflow.messages"));
+            else
+                c = c.Routing(options.RoutingConfigurer);
 
-                c.ConfigureSagaFlowEventsForRebus(sagaFlowModule, pipelineAdditions);
+            if (options.SubscriptionConfigurer != null)
+                c = c.Subscriptions(options.SubscriptionConfigurer);
+            if (options.SagaConfigurer != null)
+                c = c.Sagas(options.SagaConfigurer);
+            if (options.TimeoutConfigurer != null)
+                c = c.Timeouts(options.TimeoutConfigurer);
 
-                return c;
-            },
+            c.ConfigureSagaFlowEventsForRebus(sagaFlowModule, pipelineAdditions);
+
+            return c;
+        });
+            // TODO: decide on direct send vs pub/sub command pattern
+            /*
+            ,
             onCreated: bus =>
             {
                 return Task.WhenAll(sagaFlowModule.Commands.Select(c => bus.Subscribe(c.CommandType)));
             });
+            */
 
         services.AddTransient<ISagaFlowCommandContext, SagaFlowRebusCommandContext>();
         
@@ -77,7 +81,7 @@ public static class SagaFlowServiceCollectionExtensions
         services.TryAddTransient<ISagaFlowActivityStore, InMemorySagaFlowActivityStore>();
         
         // Fallback registration of IUsernameProvider
-        services.TryAddTransient<IUsernameProvider, StubUsernameProvider>();
+        services.TryAddSingleton<IUsernameProvider, StubUsernameProvider>();
         
         services.TryAddSingleton<ISagaFlowTime, DefaultSagaFlowTime>();
 

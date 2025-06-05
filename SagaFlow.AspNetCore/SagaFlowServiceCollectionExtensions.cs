@@ -23,26 +23,7 @@ public static class SagaFlowServiceCollectionExtensions
         var options = new SagaFlowOptions();
         setupAction(options);
 
-        // If no custom IUsername Provider was added via the SagaFlowOptions then
-        // register the a UsernameProvider using the current Identity of the user
-        // of the HttpContext's request.
         services.AddHttpContextAccessor();
-        services.TryAddScoped<IUsernameProvider>(s =>
-        {
-            var httpContextUsernameProvider = ActivatorUtilities.CreateInstance<HttpContextUsernameProvider>(s);
-            
-            if (options.SetupContext.TryGetValue(nameof(HttpContextUsernameProvider.SystemUsername), out var systemUserName))
-            {
-                httpContextUsernameProvider.SystemUsername = systemUserName as string;
-            }
-            
-            if (options.SetupContext.TryGetValue(nameof(HttpContextUsernameProvider.AnonymousUserName), out var anonymousUserName))
-            {
-                httpContextUsernameProvider.AnonymousUserName = anonymousUserName as string;
-            }
-
-            return httpContextUsernameProvider;
-        });
         
         var sagaFlowModule = SagaFlowModuleFactory.Create(options, apiBasePath);
 

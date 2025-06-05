@@ -9,8 +9,19 @@ namespace SagaFlow
         public string ApiBasePath { get; init; }
         public IReadOnlyList<Command> Commands { get; init; }
         public IReadOnlyList<ResourceProvider> ResourceProviders { get; init; }
-        internal IServiceProvider ServiceProvider { get; set; }
 
-        internal List<Action<object>> SageFlowStartup = new List<Action<object>>();
+        private IServiceProvider? serviceProvider;
+        internal IServiceProvider ServiceProvider
+        {
+            get
+            {
+                if (serviceProvider == null)
+                    throw new InvalidOperationException("SagaFlow service provider is not configured. Are you missing a call to 'app.UseSagaFlow()'?");
+                return serviceProvider;
+            }
+            set => serviceProvider = value;
+        }
+
+        internal List<Action<object>> SageFlowStartup = [];
     }
 }
