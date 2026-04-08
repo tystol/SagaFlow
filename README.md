@@ -131,6 +131,7 @@ or if you don't want to use the attached SagaFlow from the window object.
 
     sagaFlow.initialize("[custom-sagaflow-route]")
 </script>
+```
 
 #### sf-command-form - Command form
 
