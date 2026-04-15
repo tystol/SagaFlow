@@ -44,6 +44,8 @@ const config: UserConfig = {
       $lib    : path.resolve("./src/lib"),
       $assets : path.resolve("./src/assets"),
       '@'     : path.resolve('./src'),
+      // ensures `svelte/internal` resolves to the host's runtime when plugins depend on it
+      //'svelte': path.resolve(__dirname, 'node_modules/svelte'),
     }
   },
   build: {

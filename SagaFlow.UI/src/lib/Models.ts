@@ -42,7 +42,7 @@ export interface Command {
 export interface Config {
     resourceLists: Record<string, ResourceList>;
     commands: Record<string, Command>;
-    sidebarWidgets: Record<string, WidgetDefinition>;
+    sidebarComponents: Record<string, WidgetDefinition>;
 };
 
 export interface WidgetDefinition {

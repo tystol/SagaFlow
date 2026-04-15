@@ -1,0 +1,17 @@
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "compilerOptions": {
+    "types": ["svelte"],
+    "strict": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "module": "esnext",
+    "target": "esnext",
+    "isolatedModules": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "src/svelte.d.ts"
+  ]
+}

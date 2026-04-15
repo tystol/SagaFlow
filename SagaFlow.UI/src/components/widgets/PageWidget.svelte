@@ -7,22 +7,30 @@
 
     var sf = sagaFlow.state();
 
-    let widgetRootElement;
     let isWidgetLoading = true;
     let widgetComponent;
 
-    $: if (params.id && widgetRootElement){
+    $: if (params.id){
         loadWidget();
     }
 
     async function loadWidget() {
         isWidgetLoading = true;
+
+        /* TODO: add support for web components.
         widgetRootElement.replaceChildren();
-        var widget = $sf.config.sidebarWidgets[params.id];
-        const widgetModule = await import(/* @vite-ignore */ widget.href);
-        var newWidget = document.createElement(widget.webComponentId);
+        */
+
+        var widget = $sf.config.sidebarComponents[params.id];
+        const pluginModule = await import(/* @vite-ignore */ widget.href);
+        const pluginManifest = pluginModule.manifest;
+        widgetComponent = pluginManifest.views[widget.webComponentId];
+
+        /* TODO: add support for web components.
+        var newWidget = document.createElement(pluginManifest.views[widget.webComponentId]);
         newWidget.setAttribute('name', 'SagaFlow');
         widgetRootElement.appendChild(newWidget);
+        */
         isWidgetLoading = false;
     }
 </script>
@@ -33,6 +41,17 @@
             <span class="loader loader-lg" />
             <h1>Loading...</h1>
         </div>
+    {:else}
+        {#if widgetComponent}
+            <svelte:component this={widgetComponent} />
+        {:else}
+            <div class="placeholder-section m-b-base">
+                <h1>Widget not found</h1>
+                <p>The requested widget could not be found.</p>
+            </div>
+        {/if}
     {/if}
+    <!-- TODO: add support for web components.
     <div bind:this={widgetRootElement}></div>
+    -->
 </PageWrapper>

@@ -42,7 +42,7 @@ const initialState: ISagaFlowServerState = {
     config: {
         commands: {},
         resourceLists: {},
-        sidebarWidgets: {},
+        sidebarComponents: {},
     },
     
     resourceCache: {},

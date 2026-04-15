@@ -7,5 +7,6 @@ namespace SagaFlow
     {
         IReadOnlyList<ResourceProvider> ResourceProviders { get; }
         IReadOnlyList<Command> Commands { get; }
+        IReadOnlyList<FrontEndSidebarComponent> FrontEndSidebarComponents { get; }
     }
 }

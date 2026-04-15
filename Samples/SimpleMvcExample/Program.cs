@@ -1,3 +1,4 @@
+using System.Reflection;
 using Rebus.Config;
 using Rebus.Persistence.InMem;
 using Rebus.Retry.Simple;
@@ -6,6 +7,7 @@ using Rebus.Sagas;
 using Rebus.Subscriptions;
 using Rebus.Transport;
 using Rebus.Transport.InMem;
+using SagaFlow;
 using SagaFlow.SignalR;
 using SimpleMvcExample.CommandHandlers;
 using SimpleMvcExample.Messages;
@@ -113,7 +115,34 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.UseSagaFlow();
+ListManifest(Assembly.GetAssembly(typeof(SagaFlowModule))!);
+ListManifest(Assembly.GetAssembly(typeof(Program))!);
+
+app.UseSagaFlow(o => o
+    .AddEmbeddedResourcePlugin("hello-plugin", Assembly.GetAssembly(typeof(Program))!, "FrontEndPlugins\\hello-plugin", "hello-plugin.js" )
+    //.AddHostedPlugin("hello-plugin", "http://localhost:5174/src/index.ts")
+    .AddSidebarComponent("hello-plugin", "Hello", "ri-user-smile-line", "hello")
+);
 
 app.Run();
 
+void ListManifest(Assembly assembly)
+{
+    // Get the names of all embedded resources in the assembly
+    string[] resourceNames = assembly.GetManifestResourceNames();
+
+    Console.WriteLine("Embedded Resources in Assembly:");
+
+    // Iterate through the resource names and display them
+    if (resourceNames.Length > 0)
+    {
+        foreach (string resourceName in resourceNames)
+        {
+            Console.WriteLine($"- {resourceName}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("No embedded resources found in this assembly.");
+    }
+}

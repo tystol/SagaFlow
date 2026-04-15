@@ -57,46 +57,18 @@ namespace SagaFlow.MvcProvider
                                 ResourceListId = p.ResourceProvider?.Id
                             })
                     }),
-                SidebarWidgets = new Dictionary<string, WidgetDefinition>
-                {
-                    {"exampleWidget", new WidgetDefinition
-                        {
-                            Name = "Welcome Widget",
-                            Href = "/sagaflow/schema/welcome-widget",
-                            WebComponentId = "svelte-welcome"
-                        } 
-                    },
-                    {"helloWidget", new WidgetDefinition
-                        {
-                            Name = "Hello",
-                            Icon = "ri-user-smile-line",
-                            Href = "/sagaflow/schema/hello-widget",
-                            WebComponentId = "hello-world"
-                        } 
-                    },
-                }
+                SidebarComponents = schemaProvider.FrontEndSidebarComponents
+                    .ToDictionary(c => $"{c.Plugin.PluginId}-{c.PluginComponentId}", c => new PluginComponentDefinition
+                    {
+                        Name = c.Label,
+                        Icon = c.Icon,
+                        Href = c.Plugin.EntryPointUrl,
+                        WebComponentId = c.PluginComponentId,
+                    }),
             };
             return Task.FromResult(result);
         }
         
-        [HttpGet]
-        [Route("hello-widget")]
-        public Task<IActionResult> GetWidget1()
-        {
-            //var stream = System.IO.File.OpenRead("..\\SimpleMvcExample.Widgets\\example-widget\\dist\\example-widget.js");
-            var stream = System.IO.File.OpenRead("..\\SimpleMvcExample.WebComponentWidgets\\public\\dist\\es\\hello.min.js");
-            return Task.FromResult((IActionResult)File(stream, "text/javascript", true));
-        }
-        
-        [HttpGet]
-        [Route("welcome-widget")]
-        public Task<IActionResult> GetWidget2()
-        {
-            //var stream = System.IO.File.OpenRead("..\\SimpleMvcExample.Widgets\\example-widget\\dist\\example-widget.js");
-            var stream = System.IO.File.OpenRead("..\\SimpleMvcExample.WebComponentWidgets\\public\\dist\\es\\svelteWelcome.min.js");
-            return Task.FromResult((IActionResult)File(stream, "text/javascript", true));
-        }
-
         private static string GetSchemaType(Type type, ResourceProvider resourceProvider = null)
         {
             // TODO: better handling of multiselect
@@ -115,7 +87,7 @@ namespace SagaFlow.MvcProvider
     {
         public IDictionary<string,ResourceListDefinition> ResourceLists { get; set; }
         public IDictionary<string,CommandDefinition> Commands { get; set; }
-        public IDictionary<string,WidgetDefinition> SidebarWidgets { get; set; }
+        public IDictionary<string,PluginComponentDefinition> SidebarComponents { get; set; }
     }
 
     public interface ISchemaDefinition<T> where T : IPropertySchema
@@ -165,7 +137,7 @@ namespace SagaFlow.MvcProvider
         public string ResourceListId { get; set; }
     }
 
-    public class WidgetDefinition
+    public class PluginComponentDefinition
     {
         public string Name { get; set; }
         public string Icon { get; set; }
